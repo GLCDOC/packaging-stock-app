@@ -39,6 +39,8 @@
             const [showEditProduct, setShowEditProduct] = useState(false);
             const [showStockMovement, setShowStockMovement] = useState(false);
             const [showOrderForm, setShowOrderForm] = useState(false);
+            const [showPartialReceive, setShowPartialReceive] = useState(false);
+            const [selectedOrderItem, setSelectedOrderItem] = useState(null);
             const [selectedProduct, setSelectedProduct] = useState(null);
             const [movementType, setMovementType] = useState('in');
             const [movementQty, setMovementQty] = useState('');
@@ -234,60 +236,82 @@
                 setShowOrderForm(false);
             };
 
-            const receiveOrderItem = async (orderId, itemIndex) => {
+            const receiveOrderItem = async (orderId, itemIndex, quantityToReceive) => {
                 const order = orders.find(o => o.id === orderId);
                 if (!order) return;
 
                 const updatedItems = [...order.items];
                 const item = updatedItems[itemIndex];
 
-                if (!item.received) {
+                // Initialize received_qty if not present
+                if (item.received_qty === undefined) {
+                    item.received_qty = 0;
+                }
+
+                const qtyToReceive = parseInt(quantityToReceive);
+                const totalOrdered = parseInt(item.quantity);
+                const newReceivedQty = item.received_qty + qtyToReceive;
+
+                // Update received quantity
+                item.received_qty = Math.min(newReceivedQty, totalOrdered);
+
+                // Mark as fully received if all quantity is received
+                if (item.received_qty >= totalOrdered) {
                     item.received = true;
-                    item.received_date = new Date().toISOString();
-                    item.received_by = currentUser.name;
+                }
 
-                    const product = products.find(p =>
-                        (p.product_code || p.productCode) === (item.productCode || item.product_code)
-                    );
+                // Add received history entry
+                if (!item.received_history) {
+                    item.received_history = [];
+                }
+                item.received_history.push({
+                    date: new Date().toISOString(),
+                    by: currentUser.name,
+                    quantity: qtyToReceive
+                });
 
-                    if (product) {
-                        const newStock = product.current_stock + parseInt(item.quantity);
+                const product = products.find(p =>
+                    (p.product_code || p.productCode) === (item.productCode || item.product_code)
+                );
 
-                        // Update product stock
-                        await supabase
-                            .from('products')
-                            .update({ current_stock: newStock })
-                            .eq('id', product.id);
+                if (product) {
+                    const newStock = product.current_stock + qtyToReceive;
 
-                        setProducts(products.map(p =>
-                            p.id === product.id ? { ...p, current_stock: newStock } : p
-                        ));
+                    // Update product stock
+                    await supabase
+                        .from('products')
+                        .update({ current_stock: newStock })
+                        .eq('id', product.id);
 
-                        // Record movement
-                        const movement = {
-                            product_id: product.id,
-                            product_code: product.product_code || product.productCode,
-                            product_name: product.in_house_name || product.inHouseName,
-                            type: 'in',
-                            quantity: parseInt(item.quantity),
-                            user_name: currentUser.name,
-                            notes: `Order #${orderId} received`,
-                            timestamp: new Date().toISOString()
-                        };
+                    setProducts(products.map(p =>
+                        p.id === product.id ? { ...p, current_stock: newStock } : p
+                    ));
 
-                        const { data: movementData } = await supabase
-                            .from('movements')
-                            .insert([movement])
-                            .select();
+                    // Record movement
+                    const movement = {
+                        product_id: product.id,
+                        product_code: product.product_code || product.productCode,
+                        product_name: product.in_house_name || product.inHouseName,
+                        type: 'in',
+                        quantity: qtyToReceive,
+                        user_name: currentUser.name,
+                        notes: `Order #${orderId} - Received ${qtyToReceive} of ${totalOrdered}`,
+                        timestamp: new Date().toISOString()
+                    };
 
-                        if (movementData && movementData.length > 0) {
-                            setMovements([movementData[0], ...movements]);
-                        }
+                    const { data: movementData } = await supabase
+                        .from('movements')
+                        .insert([movement])
+                        .select();
+
+                    if (movementData && movementData.length > 0) {
+                        setMovements([movementData[0], ...movements]);
                     }
                 }
 
                 const allReceived = updatedItems.every(i => i.received);
-                const newStatus = allReceived ? 'completed' : 'partial';
+                const anyReceived = updatedItems.some(i => i.received_qty > 0);
+                const newStatus = allReceived ? 'completed' : (anyReceived ? 'partial' : 'pending');
 
                 // Update order
                 await supabase
@@ -406,7 +430,10 @@
                             <OrdersView
                                 orders={orders}
                                 onCreateOrder={() => setShowOrderForm(true)}
-                                onReceiveItem={receiveOrderItem}
+                                onReceiveItem={(orderId, itemIndex, item) => {
+                                    setSelectedOrderItem({ orderId, itemIndex, item });
+                                    setShowPartialReceive(true);
+                                }}
                             />
                         )}
 
@@ -456,6 +483,21 @@
                             products={products}
                             onClose={() => setShowOrderForm(false)}
                             onSubmit={createOrder}
+                        />
+                    )}
+
+                    {showPartialReceive && selectedOrderItem && (
+                        <PartialReceiveModal
+                            orderItem={selectedOrderItem}
+                            onClose={() => {
+                                setShowPartialReceive(false);
+                                setSelectedOrderItem(null);
+                            }}
+                            onSubmit={(quantity) => {
+                                receiveOrderItem(selectedOrderItem.orderId, selectedOrderItem.itemIndex, quantity);
+                                setShowPartialReceive(false);
+                                setSelectedOrderItem(null);
+                            }}
                         />
                     )}
                 </div>
@@ -659,21 +701,35 @@
                                             <tr className="text-left text-xs text-gray-600 uppercase">
                                                 <th className="pb-2">Product Code</th>
                                                 <th className="pb-2">Product Name</th>
-                                                <th className="pb-2">Quantity</th>
+                                                <th className="pb-2">Ordered</th>
+                                                <th className="pb-2">Received</th>
                                                 <th className="pb-2">Status</th>
                                                 <th className="pb-2 text-right">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y">
-                                            {order.items.map((item, idx) => (
+                                            {order.items.map((item, idx) => {
+                                                const receivedQty = item.received_qty || 0;
+                                                const orderedQty = parseInt(item.quantity);
+                                                const remaining = orderedQty - receivedQty;
+                                                return (
                                                 <tr key={idx}>
                                                     <td className="py-2 text-sm">{item.productCode}</td>
                                                     <td className="py-2 text-sm">{item.productName}</td>
-                                                    <td className="py-2 text-sm">{item.quantity}</td>
+                                                    <td className="py-2 text-sm font-medium">{orderedQty}</td>
+                                                    <td className="py-2 text-sm">
+                                                        <span className={receivedQty > 0 ? 'font-medium text-green-700' : 'text-gray-400'}>
+                                                            {receivedQty}
+                                                        </span>
+                                                    </td>
                                                     <td className="py-2">
                                                         {item.received ? (
                                                             <span className="text-green-600 text-sm">
-                                                                ✓ Received by {item.received_by || item.receivedBy}
+                                                                ✓ Complete
+                                                            </span>
+                                                        ) : receivedQty > 0 ? (
+                                                            <span className="text-yellow-600 text-sm">
+                                                                ⏳ Partial ({remaining} remaining)
                                                             </span>
                                                         ) : (
                                                             <span className="text-gray-500 text-sm">Pending</span>
@@ -682,7 +738,7 @@
                                                     <td className="py-2 text-right">
                                                         {!item.received && (
                                                             <button
-                                                                onClick={() => onReceiveItem(order.id, idx)}
+                                                                onClick={() => onReceiveItem(order.id, idx, item)}
                                                                 className="bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-green-200 transition text-sm"
                                                             >
                                                                 Receive
@@ -690,7 +746,8 @@
                                                         )}
                                                     </td>
                                                 </tr>
-                                            ))}
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 </div>
@@ -1080,6 +1137,86 @@
                             >
                                 Confirm {type === 'in' ? 'Stock IN' : 'Stock OUT'}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const PartialReceiveModal = ({ orderItem, onClose, onSubmit }) => {
+            const { item } = orderItem;
+            const receivedQty = item.received_qty || 0;
+            const orderedQty = parseInt(item.quantity);
+            const remaining = orderedQty - receivedQty;
+            const [quantity, setQuantity] = useState(remaining.toString());
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                const qty = parseInt(quantity);
+                if (qty > 0 && qty <= remaining) {
+                    onSubmit(qty);
+                }
+            };
+
+            return (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+                        <div className="p-6 border-b">
+                            <h2 className="text-xl font-bold">Receive Items</h2>
+                            <p className="text-sm text-gray-600 mt-2">
+                                <span className="font-medium">{item.productName}</span>
+                            </p>
+                            <p className="text-sm text-gray-600">Code: {item.productCode}</p>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">Ordered:</span>
+                                    <span className="font-medium">{orderedQty}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">Already Received:</span>
+                                    <span className="font-medium text-green-600">{receivedQty}</span>
+                                </div>
+                                <div className="flex justify-between text-sm border-t pt-2">
+                                    <span className="text-gray-600 font-medium">Remaining:</span>
+                                    <span className="font-bold text-indigo-600">{remaining}</span>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleSubmit}>
+                                <label className="block text-sm font-medium mb-1">Quantity to Receive *</label>
+                                <input
+                                    type="number"
+                                    required
+                                    min="1"
+                                    max={remaining}
+                                    value={quantity}
+                                    onChange={(e) => setQuantity(e.target.value)}
+                                    className="w-full p-2 border rounded"
+                                    autoFocus
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Enter the quantity you are receiving now (max: {remaining})
+                                </p>
+
+                                <div className="flex justify-end gap-2 mt-6">
+                                    <button
+                                        type="button"
+                                        onClick={onClose}
+                                        className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={!quantity || parseInt(quantity) <= 0 || parseInt(quantity) > remaining}
+                                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Receive {quantity || '0'} Items
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
