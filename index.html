@@ -8,12 +8,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
+
+        // Initialize Supabase client
+        const SUPABASE_URL = 'https://zsskdgkqlcuwwarlqwsz.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpzc2tkZ2txbGN1d3dhcmxxd3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0MDQ3NzIsImV4cCI6MjA4Mzk4MDc3Mn0.BkrK1Hbg2K5Q6D_UxI9BBAF-g1W6bvgdxhUEiv205uA';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const PackagingStockApp = () => {
             const [currentUser, setCurrentUser] = useState(null);
@@ -37,33 +43,56 @@
             const [movementQty, setMovementQty] = useState('');
             const [movementNotes, setMovementNotes] = useState('');
 
+            // Load data from Supabase on mount
             useEffect(() => {
-                const savedProducts = localStorage.getItem('packagingProducts');
-                const savedOrders = localStorage.getItem('packagingOrders');
-                const savedMovements = localStorage.getItem('packagingMovements');
-                const savedUsers = localStorage.getItem('packagingUsers');
-                
-                if (savedProducts) setProducts(JSON.parse(savedProducts));
-                if (savedOrders) setOrders(JSON.parse(savedOrders));
-                if (savedMovements) setMovements(JSON.parse(savedMovements));
-                if (savedUsers) setUsers(JSON.parse(savedUsers));
+                loadAllData();
             }, []);
 
-            useEffect(() => {
-                localStorage.setItem('packagingProducts', JSON.stringify(products));
-            }, [products]);
+            const loadAllData = async () => {
+                try {
+                    // Load products
+                    const { data: productsData } = await supabase
+                        .from('products')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    if (productsData) setProducts(productsData);
 
-            useEffect(() => {
-                localStorage.setItem('packagingOrders', JSON.stringify(orders));
-            }, [orders]);
+                    // Load orders
+                    const { data: ordersData } = await supabase
+                        .from('orders')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    if (ordersData) setOrders(ordersData);
 
-            useEffect(() => {
-                localStorage.setItem('packagingMovements', JSON.stringify(movements));
-            }, [movements]);
+                    // Load movements
+                    const { data: movementsData } = await supabase
+                        .from('movements')
+                        .select('*')
+                        .order('timestamp', { ascending: false });
+                    if (movementsData) setMovements(movementsData);
 
-            useEffect(() => {
-                localStorage.setItem('packagingUsers', JSON.stringify(users));
-            }, [users]);
+                    // Load users
+                    const { data: usersData } = await supabase
+                        .from('users')
+                        .select('*');
+                    if (usersData && usersData.length > 0) {
+                        setUsers(usersData);
+                    } else {
+                        // Initialize default users if none exist
+                        const defaultUsers = [
+                            { id: 1, name: 'Admin', pin: '1234', role: 'admin' },
+                            { id: 2, name: 'User 1', pin: '1111', role: 'user' },
+                            { id: 3, name: 'User 2', pin: '2222', role: 'user' },
+                            { id: 4, name: 'User 3', pin: '3333', role: 'user' },
+                            { id: 5, name: 'User 4', pin: '4444', role: 'user' }
+                        ];
+                        await supabase.from('users').insert(defaultUsers);
+                        setUsers(defaultUsers);
+                    }
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                }
+            };
 
             const handlePinSubmit = (e) => {
                 e.preventDefault();
@@ -82,45 +111,63 @@
                 setActiveTab('stock');
             };
 
-            const addProduct = (productData) => {
+            const addProduct = async (productData) => {
                 const newProduct = {
-                    id: Date.now(),
                     ...productData,
-                    currentStock: 0,
-                    lowStockThreshold: productData.lowStockThreshold || 10,
-                    createdBy: currentUser.name,
-                    createdAt: new Date().toISOString()
+                    current_stock: 0,
+                    created_by: currentUser.name,
+                    created_at: new Date().toISOString()
                 };
-                setProducts([...products, newProduct]);
+
+                const { data, error } = await supabase
+                    .from('products')
+                    .insert([newProduct])
+                    .select();
+
+                if (data && data.length > 0) {
+                    setProducts([data[0], ...products]);
+                }
                 setShowAddProduct(false);
             };
 
-            const recordMovement = () => {
+            const recordMovement = async () => {
                 if (!selectedProduct || !movementQty) return;
 
                 const qty = parseInt(movementQty);
                 const movement = {
-                    id: Date.now(),
-                    productId: selectedProduct.id,
-                    productCode: selectedProduct.productCode,
-                    productName: selectedProduct.inHouseName,
+                    product_id: selectedProduct.id,
+                    product_code: selectedProduct.product_code || selectedProduct.productCode,
+                    product_name: selectedProduct.in_house_name || selectedProduct.inHouseName,
                     type: movementType,
                     quantity: qty,
-                    user: currentUser.name,
+                    user_name: currentUser.name,
                     notes: movementNotes,
                     timestamp: new Date().toISOString()
                 };
 
-                setMovements([movement, ...movements]);
+                // Insert movement
+                const { data: movementData } = await supabase
+                    .from('movements')
+                    .insert([movement])
+                    .select();
+
+                if (movementData && movementData.length > 0) {
+                    setMovements([movementData[0], ...movements]);
+                }
+
+                // Update product stock
+                const newStock = movementType === 'in'
+                    ? selectedProduct.current_stock + qty
+                    : Math.max(0, selectedProduct.current_stock - qty);
+
+                await supabase
+                    .from('products')
+                    .update({ current_stock: newStock })
+                    .eq('id', selectedProduct.id);
 
                 setProducts(products.map(p => {
                     if (p.id === selectedProduct.id) {
-                        return {
-                            ...p,
-                            currentStock: movementType === 'in' 
-                                ? p.currentStock + qty 
-                                : Math.max(0, p.currentStock - qty)
-                        };
+                        return { ...p, current_stock: newStock };
                     }
                     return p;
                 }));
@@ -131,66 +178,96 @@
                 setMovementNotes('');
             };
 
-            const createOrder = (orderData) => {
+            const createOrder = async (orderData) => {
                 const newOrder = {
-                    id: Date.now(),
-                    ...orderData,
+                    supplier: orderData.supplier,
+                    expected_date: orderData.expectedDate,
+                    notes: orderData.notes,
                     status: 'pending',
-                    createdBy: currentUser.name,
-                    createdAt: new Date().toISOString(),
+                    created_by: currentUser.name,
+                    created_at: new Date().toISOString(),
                     items: orderData.items.map(item => ({
                         ...item,
                         received: false,
-                        receivedQty: 0
+                        received_qty: 0
                     }))
                 };
-                setOrders([newOrder, ...orders]);
+
+                const { data, error } = await supabase
+                    .from('orders')
+                    .insert([newOrder])
+                    .select();
+
+                if (data && data.length > 0) {
+                    setOrders([data[0], ...orders]);
+                }
                 setShowOrderForm(false);
             };
 
-            const receiveOrderItem = (orderId, itemIndex) => {
-                setOrders(orders.map(order => {
-                    if (order.id === orderId) {
-                        const updatedItems = [...order.items];
-                        const item = updatedItems[itemIndex];
-                        
-                        if (!item.received) {
-                            item.received = true;
-                            item.receivedDate = new Date().toISOString();
-                            item.receivedBy = currentUser.name;
+            const receiveOrderItem = async (orderId, itemIndex) => {
+                const order = orders.find(o => o.id === orderId);
+                if (!order) return;
 
-                            const product = products.find(p => p.productCode === item.productCode);
-                            if (product) {
-                                setProducts(products.map(p => 
-                                    p.id === product.id 
-                                        ? { ...p, currentStock: p.currentStock + parseInt(item.quantity) }
-                                        : p
-                                ));
+                const updatedItems = [...order.items];
+                const item = updatedItems[itemIndex];
 
-                                const movement = {
-                                    id: Date.now(),
-                                    productId: product.id,
-                                    productCode: product.productCode,
-                                    productName: product.inHouseName,
-                                    type: 'in',
-                                    quantity: parseInt(item.quantity),
-                                    user: currentUser.name,
-                                    notes: `Order #${orderId} received`,
-                                    timestamp: new Date().toISOString()
-                                };
-                                setMovements([movement, ...movements]);
-                            }
-                        }
+                if (!item.received) {
+                    item.received = true;
+                    item.received_date = new Date().toISOString();
+                    item.received_by = currentUser.name;
 
-                        const allReceived = updatedItems.every(i => i.received);
-                        return {
-                            ...order,
-                            items: updatedItems,
-                            status: allReceived ? 'completed' : 'partial'
+                    const product = products.find(p =>
+                        (p.product_code || p.productCode) === (item.productCode || item.product_code)
+                    );
+
+                    if (product) {
+                        const newStock = product.current_stock + parseInt(item.quantity);
+
+                        // Update product stock
+                        await supabase
+                            .from('products')
+                            .update({ current_stock: newStock })
+                            .eq('id', product.id);
+
+                        setProducts(products.map(p =>
+                            p.id === product.id ? { ...p, current_stock: newStock } : p
+                        ));
+
+                        // Record movement
+                        const movement = {
+                            product_id: product.id,
+                            product_code: product.product_code || product.productCode,
+                            product_name: product.in_house_name || product.inHouseName,
+                            type: 'in',
+                            quantity: parseInt(item.quantity),
+                            user_name: currentUser.name,
+                            notes: `Order #${orderId} received`,
+                            timestamp: new Date().toISOString()
                         };
+
+                        const { data: movementData } = await supabase
+                            .from('movements')
+                            .insert([movement])
+                            .select();
+
+                        if (movementData && movementData.length > 0) {
+                            setMovements([movementData[0], ...movements]);
+                        }
                     }
-                    return order;
-                }));
+                }
+
+                const allReceived = updatedItems.every(i => i.received);
+                const newStatus = allReceived ? 'completed' : 'partial';
+
+                // Update order
+                await supabase
+                    .from('orders')
+                    .update({ items: updatedItems, status: newStatus })
+                    .eq('id', orderId);
+
+                setOrders(orders.map(o =>
+                    o.id === orderId ? { ...o, items: updatedItems, status: newStatus } : o
+                ));
             };
 
             if (!currentUser) {
@@ -344,14 +421,23 @@
             const [filterLowStock, setFilterLowStock] = useState(false);
 
             const filteredProducts = products.filter(p => {
-                const matchesSearch = p.productCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                     p.inHouseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                     p.productName.toLowerCase().includes(searchTerm.toLowerCase());
-                const matchesFilter = !filterLowStock || p.currentStock <= p.lowStockThreshold;
+                const productCode = p.product_code || p.productCode || '';
+                const inHouseName = p.in_house_name || p.inHouseName || '';
+                const productName = p.product_name || p.productName || '';
+                const matchesSearch = productCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                     inHouseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                     productName.toLowerCase().includes(searchTerm.toLowerCase());
+                const currentStock = p.current_stock !== undefined ? p.current_stock : p.currentStock;
+                const threshold = p.low_stock_threshold !== undefined ? p.low_stock_threshold : p.lowStockThreshold;
+                const matchesFilter = !filterLowStock || currentStock <= threshold;
                 return matchesSearch && matchesFilter;
             });
 
-            const lowStockCount = products.filter(p => p.currentStock <= p.lowStockThreshold).length;
+            const lowStockCount = products.filter(p => {
+                const currentStock = p.current_stock !== undefined ? p.current_stock : p.currentStock;
+                const threshold = p.low_stock_threshold !== undefined ? p.low_stock_threshold : p.lowStockThreshold;
+                return currentStock <= threshold;
+            }).length;
 
             return (
                 <div>
@@ -401,15 +487,18 @@
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
-                                {filteredProducts.map(product => (
+                                {filteredProducts.map(product => {
+                                    const currentStock = product.current_stock !== undefined ? product.current_stock : product.currentStock;
+                                    const threshold = product.low_stock_threshold !== undefined ? product.low_stock_threshold : product.lowStockThreshold;
+                                    return (
                                     <tr key={product.id} className="hover:bg-gray-50">
-                                        <td className="px-4 py-3 text-sm font-medium">{product.productCode}</td>
-                                        <td className="px-4 py-3 text-sm">{product.inHouseName}</td>
+                                        <td className="px-4 py-3 text-sm font-medium">{product.product_code || product.productCode}</td>
+                                        <td className="px-4 py-3 text-sm">{product.in_house_name || product.inHouseName}</td>
                                         <td className="px-4 py-3 text-sm text-gray-600">{product.size || '-'}</td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">{product.onlinePackSize || '-'}</td>
-                                        <td className="px-4 py-3 text-sm font-semibold">{product.currentStock}</td>
+                                        <td className="px-4 py-3 text-sm text-gray-600">{product.online_pack_size || product.onlinePackSize || '-'}</td>
+                                        <td className="px-4 py-3 text-sm font-semibold">{currentStock}</td>
                                         <td className="px-4 py-3">
-                                            {product.currentStock <= product.lowStockThreshold ? (
+                                            {currentStock <= threshold ? (
                                                 <span className="flex items-center gap-1 text-red-600 text-sm">
                                                     ⚠ Low Stock
                                                 </span>
@@ -434,7 +523,8 @@
                                             </div>
                                         </td>
                                     </tr>
-                                ))}
+                                    );
+                                })}
                             </tbody>
                         </table>
                         {filteredProducts.length === 0 && (
@@ -488,10 +578,10 @@
                                     <div>
                                         <h3 className="text-lg font-semibold">Order #{order.id}</h3>
                                         <p className="text-sm text-gray-600">
-                                            Created by {order.createdBy} on {new Date(order.createdAt).toLocaleDateString()}
+                                            Created by {order.created_by || order.createdBy} on {new Date(order.created_at || order.createdAt).toLocaleDateString()}
                                         </p>
                                         <p className="text-sm text-gray-600">
-                                            Supplier: {order.supplier} | Expected: {new Date(order.expectedDate).toLocaleDateString()}
+                                            Supplier: {order.supplier} | Expected: {new Date(order.expected_date || order.expectedDate).toLocaleDateString()}
                                         </p>
                                     </div>
                                     <span className={`px-3 py-1 rounded-full text-sm font-semibold capitalize ${
@@ -523,7 +613,7 @@
                                                     <td className="py-2">
                                                         {item.received ? (
                                                             <span className="text-green-600 text-sm">
-                                                                ✓ Received by {item.receivedBy}
+                                                                ✓ Received by {item.received_by || item.receivedBy}
                                                             </span>
                                                         ) : (
                                                             <span className="text-gray-500 text-sm">Pending</span>
@@ -615,7 +705,7 @@
                                             <div className="text-gray-600 text-xs">{movement.productCode}</div>
                                         </td>
                                         <td className="px-4 py-3 text-sm font-semibold">{movement.quantity}</td>
-                                        <td className="px-4 py-3 text-sm">{movement.user}</td>
+                                        <td className="px-4 py-3 text-sm">{movement.user_name || movement.user}</td>
                                         <td className="px-4 py-3 text-sm text-gray-600">{movement.notes || '-'}</td>
                                     </tr>
                                 ))}
@@ -633,14 +723,14 @@
 
         const AddProductModal = ({ onClose, onAdd }) => {
             const [formData, setFormData] = useState({
-                productCode: '',
+                product_code: '',
                 size: '',
-                inHouseName: '',
-                productName: '',
-                onlinePackSize: '',
-                receivedPackSize: '',
+                in_house_name: '',
+                product_name: '',
+                online_pack_size: '',
+                received_pack_size: '',
                 supplier: 'MacFarlane',
-                lowStockThreshold: 10
+                low_stock_threshold: 10
             });
 
             const handleSubmit = (e) => {
@@ -662,8 +752,8 @@
                                     <input
                                         type="text"
                                         required
-                                        value={formData.productCode}
-                                        onChange={(e) => setFormData({...formData, productCode: e.target.value})}
+                                        value={formData.product_code}
+                                        onChange={(e) => setFormData({...formData, product_code: e.target.value})}
                                         className="w-full p-2 border rounded"
                                     />
                                 </div>
@@ -681,8 +771,8 @@
                                     <input
                                         type="text"
                                         required
-                                        value={formData.inHouseName}
-                                        onChange={(e) => setFormData({...formData, inHouseName: e.target.value})}
+                                        value={formData.in_house_name}
+                                        onChange={(e) => setFormData({...formData, in_house_name: e.target.value})}
                                         className="w-full p-2 border rounded"
                                     />
                                 </div>
@@ -691,8 +781,8 @@
                                     <input
                                         type="text"
                                         required
-                                        value={formData.productName}
-                                        onChange={(e) => setFormData({...formData, productName: e.target.value})}
+                                        value={formData.product_name}
+                                        onChange={(e) => setFormData({...formData, product_name: e.target.value})}
                                         className="w-full p-2 border rounded"
                                     />
                                 </div>
@@ -700,8 +790,8 @@
                                     <label className="block text-sm font-medium mb-1">Online Pack Size</label>
                                     <input
                                         type="text"
-                                        value={formData.onlinePackSize}
-                                        onChange={(e) => setFormData({...formData, onlinePackSize: e.target.value})}
+                                        value={formData.online_pack_size}
+                                        onChange={(e) => setFormData({...formData, online_pack_size: e.target.value})}
                                         className="w-full p-2 border rounded"
                                     />
                                 </div>
@@ -709,8 +799,8 @@
                                     <label className="block text-sm font-medium mb-1">Received Pack Size</label>
                                     <input
                                         type="text"
-                                        value={formData.receivedPackSize}
-                                        onChange={(e) => setFormData({...formData, receivedPackSize: e.target.value})}
+                                        value={formData.received_pack_size}
+                                        onChange={(e) => setFormData({...formData, received_pack_size: e.target.value})}
                                         className="w-full p-2 border rounded"
                                     />
                                 </div>
@@ -727,8 +817,8 @@
                                     <label className="block text-sm font-medium mb-1">Low Stock Threshold</label>
                                     <input
                                         type="number"
-                                        value={formData.lowStockThreshold}
-                                        onChange={(e) => setFormData({...formData, lowStockThreshold: e.target.value})}
+                                        value={formData.low_stock_threshold}
+                                        onChange={(e) => setFormData({...formData, low_stock_threshold: e.target.value})}
                                         className="w-full p-2 border rounded"
                                     />
                                 </div>
@@ -760,10 +850,10 @@
                     <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
                         <div className="p-6 border-b">
                             <h2 className="text-xl font-bold">
-                                Stock {type === 'in' ? 'IN' : 'OUT'}: {product.inHouseName}
+                                Stock {type === 'in' ? 'IN' : 'OUT'}: {product.in_house_name || product.inHouseName}
                             </h2>
-                            <p className="text-sm text-gray-600 mt-1">Code: {product.productCode}</p>
-                            <p className="text-sm text-gray-600">Current Stock: {product.currentStock}</p>
+                            <p className="text-sm text-gray-600 mt-1">Code: {product.product_code || product.productCode}</p>
+                            <p className="text-sm text-gray-600">Current Stock: {product.current_stock !== undefined ? product.current_stock : product.currentStock}</p>
                         </div>
                         <div className="p-6 space-y-4">
                             <div>
@@ -816,7 +906,7 @@
         const OrderFormModal = ({ products, onClose, onSubmit }) => {
             const [formData, setFormData] = useState({
                 supplier: 'MacFarlane',
-                expectedDate: '',
+                expected_date: '',
                 notes: ''
             });
             const [orderItems, setOrderItems] = useState([]);
@@ -831,8 +921,8 @@
 
                 const newItem = {
                     productId: product.id,
-                    productCode: product.productCode,
-                    productName: product.inHouseName,
+                    productCode: product.product_code || product.productCode,
+                    productName: product.in_house_name || product.inHouseName,
                     quantity: parseInt(itemQuantity)
                 };
 
@@ -852,7 +942,9 @@
                     return;
                 }
                 onSubmit({
-                    ...formData,
+                    supplier: formData.supplier,
+                    expectedDate: formData.expected_date,
+                    notes: formData.notes,
                     items: orderItems
                 });
             };
@@ -880,8 +972,8 @@
                                     <input
                                         type="date"
                                         required
-                                        value={formData.expectedDate}
-                                        onChange={(e) => setFormData({...formData, expectedDate: e.target.value})}
+                                        value={formData.expected_date}
+                                        onChange={(e) => setFormData({...formData, expected_date: e.target.value})}
                                         className="w-full p-2 border rounded"
                                     />
                                 </div>
@@ -909,7 +1001,7 @@
                                         <option value="">Select a product...</option>
                                         {products.map(p => (
                                             <option key={p.id} value={p.id}>
-                                                {p.productCode} - {p.inHouseName}
+                                                {p.product_code || p.productCode} - {p.in_house_name || p.inHouseName}
                                             </option>
                                         ))}
                                     </select>
