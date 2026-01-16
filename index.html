@@ -26,6 +26,10 @@
           const [currentUser, setCurrentUser] = useState(null);
           const [users, setUsers] = useState([]); // Users loaded from Supabase
           const [pinInput, setPinInput] = useState('');
+          const [darkMode, setDarkMode] = useState(() => {
+              const saved = localStorage.getItem('darkMode');
+              return saved ? JSON.parse(saved) : false;
+          });
           const [products, setProducts] = useState([]);
           const [orders, setOrders] = useState([]);
           const [movements, setMovements] = useState([]);
@@ -40,6 +44,13 @@
           const [movementType, setMovementType] = useState('in');
           const [movementQty, setMovementQty] = useState('');
           const [movementNotes, setMovementNotes] = useState('');
+
+          // Save dark mode preference
+          useEffect(() => {
+              localStorage.setItem('darkMode', JSON.stringify(darkMode));
+          }, [darkMode]);
+
+          const toggleDarkMode = () => setDarkMode(!darkMode);
 
           // Load data from Supabase on mount
           useEffect(() => {
@@ -344,8 +355,8 @@
           }
 
           return (
-              <div className="min-h-screen bg-gray-50">
-                  <div className="bg-indigo-600 text-white shadow-lg">
+              <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+                  <div className={`${darkMode ? 'bg-indigo-800' : 'bg-indigo-600'} text-white shadow-lg`}>
                       <div className="container mx-auto px-4 py-4">
                           <div className="flex justify-between items-center">
                               <div className="flex items-center gap-3">
@@ -355,10 +366,25 @@
                                   <h1 className="text-2xl font-bold">Packaging Stock Management</h1>
                               </div>
                               <div className="flex items-center gap-4">
+                                  <button
+                                      onClick={toggleDarkMode}
+                                      className={`p-2 rounded-lg transition ${darkMode ? 'bg-indigo-700 hover:bg-indigo-600' : 'bg-indigo-700 hover:bg-indigo-800'}`}
+                                      title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                                  >
+                                      {darkMode ? (
+                                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                          </svg>
+                                      ) : (
+                                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                          </svg>
+                                      )}
+                                  </button>
                                   <span className="text-sm">Welcome, {currentUser.name}</span>
                                   <button
                                       onClick={handleLogout}
-                                      className="flex items-center gap-2 bg-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-800 transition"
+                                      className={`flex items-center gap-2 ${darkMode ? 'bg-indigo-700 hover:bg-indigo-600' : 'bg-indigo-700 hover:bg-indigo-800'} px-4 py-2 rounded-lg transition`}
                                   >
                                       Logout
                                   </button>
@@ -367,7 +393,7 @@
                       </div>
                   </div>
 
-                  <div className="bg-white border-b">
+                  <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-b'}`}>
                       <div className="container mx-auto px-4">
                           <div className="flex gap-1">
                               {['stock', 'orders', 'movements', 'usage'].map(tab => (
@@ -376,8 +402,8 @@
                                       onClick={() => setActiveTab(tab)}
                                       className={`px-6 py-3 font-semibold capitalize transition ${
                                           activeTab === tab
-                                              ? 'border-b-2 border-indigo-600 text-indigo-600'
-                                              : 'text-gray-600 hover:text-gray-800'
+                                              ? `border-b-2 border-indigo-600 ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`
+                                              : `${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'}`
                                       }`}
                                   >
                                       {tab}
@@ -391,6 +417,7 @@
                       {activeTab === 'stock' && (
                           <StockView
                               products={products}
+                              darkMode={darkMode}
                               onAddProduct={() => setShowAddProduct(true)}
                               onEditProduct={(product) => {
                                   setSelectedProduct(product);
@@ -413,6 +440,7 @@
                       {activeTab === 'orders' && (
                           <OrdersView
                               orders={orders}
+                              darkMode={darkMode}
                               onCreateOrder={() => setShowOrderForm(true)}
                               onReceiveItem={(orderId, itemIndex, item) => {
                                   setSelectedOrderItem({ orderId, itemIndex, item });
@@ -422,11 +450,11 @@
                       )}
 
                       {activeTab === 'movements' && (
-                          <MovementsView movements={movements} />
+                          <MovementsView movements={movements} darkMode={darkMode} />
                       )}
 
                       {activeTab === 'usage' && (
-                          <UsageView movements={movements} products={products} />
+                          <UsageView movements={movements} products={products} darkMode={darkMode} />
                       )}
                   </div>
 
@@ -497,7 +525,7 @@
           );
       };
 
-      const StockView = ({ products, onAddProduct, onEditProduct, onDeleteProduct, onStockIn, onStockOut }) => {
+      const StockView = ({ products, darkMode, onAddProduct, onEditProduct, onDeleteProduct, onStockIn, onStockOut }) => {
           const [searchTerm, setSearchTerm] = useState('');
           const [filterLowStock, setFilterLowStock] = useState(false);
 
@@ -529,9 +557,9 @@
                               placeholder="Search products..."
                               value={searchTerm}
                               onChange={(e) => setSearchTerm(e.target.value)}
-                              className="px-4 py-2 border rounded-lg w-64"
+                              className={`px-4 py-2 border rounded-lg w-64 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : ''}`}
                           />
-                          <label className="flex items-center gap-2 cursor-pointer">
+                          <label className={`flex items-center gap-2 cursor-pointer ${darkMode ? 'text-gray-300' : ''}`}>
                               <input
                                   type="checkbox"
                                   checked={filterLowStock}
@@ -554,25 +582,25 @@
                       </button>
                   </div>
 
-                  <div className="bg-white rounded-lg shadow overflow-x-auto">
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow overflow-x-auto`}>
                       <table className="w-full">
-                          <thead className="bg-gray-50 border-b">
+                          <thead className={`${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50'} border-b`}>
                               <tr>
-                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Code</th>
-                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">In House Name</th>
-                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Size</th>
-                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Pack Size</th>
-                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Current Stock</th>
-                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
-                                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Code</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>In House Name</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Size</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Pack Size</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Current Stock</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Status</th>
+                                  <th className={`px-4 py-3 text-right text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Actions</th>
                               </tr>
                           </thead>
-                          <tbody className="divide-y">
+                          <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : ''}`}>
                               {filteredProducts.map(product => {
                                   const currentStock = product.current_stock !== undefined ? product.current_stock : product.currentStock;
                                   const threshold = product.low_stock_threshold !== undefined ? product.low_stock_threshold : product.lowStockThreshold;
                                   return (
-                                  <tr key={product.id} className="hover:bg-gray-50">
+                                  <tr key={product.id} className={`${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
                                       <td className="px-4 py-3 text-sm font-medium">{product.product_code || product.productCode}</td>
                                       <td className="px-4 py-3 text-sm">{product.in_house_name || product.inHouseName}</td>
                                       <td className="px-4 py-3 text-sm text-gray-600">{product.size || '-'}</td>
