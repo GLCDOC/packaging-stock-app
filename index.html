@@ -52,7 +52,7 @@
                   const { data: productsData } = await supabase
                       .from('products')
                       .select('*')
-                      .order('created_at', { ascending: false });
+                      .order('created_at', { ascending: true });
                   if (productsData) setProducts(productsData);
 
                   // Load orders
