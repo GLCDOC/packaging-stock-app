@@ -457,6 +457,11 @@
                                 setSelectedProduct(null);
                             }}
                             onUpdate={updateProduct}
+                            onDelete={() => {
+                                deleteProduct(selectedProduct);
+                                setShowEditProduct(false);
+                                setSelectedProduct(null);
+                            }}
                         />
                     )}
 
@@ -595,14 +600,15 @@
                                             )}
                                         </td>
                                         <td className="px-4 py-3 text-right">
-                                            <div className="flex justify-end gap-2">
+                                            <div className="flex justify-end items-center gap-2">
                                                 <button
                                                     onClick={() => onEditProduct(product)}
-                                                    className="bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 transition text-sm"
+                                                    className="bg-gray-100 text-gray-600 px-3 py-1 rounded hover:bg-gray-200 transition text-sm"
                                                     title="Edit product"
                                                 >
                                                     Edit
                                                 </button>
+                                                <span className="border-l border-gray-300 h-6 mx-1"></span>
                                                 <button
                                                     onClick={() => onStockIn(product)}
                                                     className="bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-green-200 transition text-sm"
@@ -614,13 +620,6 @@
                                                     className="bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 transition text-sm"
                                                 >
                                                     - Out
-                                                </button>
-                                                <button
-                                                    onClick={() => onDeleteProduct(product)}
-                                                    className="bg-gray-100 text-gray-700 px-3 py-1 rounded hover:bg-gray-200 transition text-sm"
-                                                    title="Delete product"
-                                                >
-                                                    Delete
                                                 </button>
                                             </div>
                                         </td>
@@ -818,8 +817,8 @@
                                             </span>
                                         </td>
                                         <td className="px-4 py-3 text-sm">
-                                            <div className="font-medium">{movement.productName}</div>
-                                            <div className="text-gray-600 text-xs">{movement.productCode}</div>
+                                            <div className="font-medium">{movement.product_name || movement.productName}</div>
+                                            <div className="text-gray-600 text-xs">{movement.product_code || movement.productCode}</div>
                                         </td>
                                         <td className="px-4 py-3 text-sm font-semibold">{movement.quantity}</td>
                                         <td className="px-4 py-3 text-sm">{movement.user_name || movement.user}</td>
@@ -961,7 +960,7 @@
             );
         };
 
-        const EditProductModal = ({ product, onClose, onUpdate }) => {
+        const EditProductModal = ({ product, onClose, onUpdate, onDelete }) => {
             const [formData, setFormData] = useState({
                 product_code: product.product_code || product.productCode || '',
                 size: product.size || '',
@@ -1063,20 +1062,29 @@
                                     />
                                 </div>
                             </div>
-                            <div className="flex justify-end gap-2 pt-4">
+                            <div className="flex justify-between pt-4 border-t mt-6">
                                 <button
                                     type="button"
-                                    onClick={onClose}
-                                    className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition"
+                                    onClick={onDelete}
+                                    className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition"
                                 >
-                                    Cancel
+                                    Delete Product
                                 </button>
-                                <button
-                                    type="submit"
-                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                                >
-                                    Update Product
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={onClose}
+                                        className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                                    >
+                                        Update Product
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>
