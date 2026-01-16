@@ -1192,7 +1192,8 @@
               online_pack_size: '',
               received_pack_size: '',
               supplier: 'MacFarlane',
-              low_stock_threshold: 10
+              low_stock_threshold: 10,
+              quick_out_quantities: ''
           });
 
           const handleSubmit = (e) => {
@@ -1285,6 +1286,20 @@
                                   />
                               </div>
                           </div>
+                          <div className="mt-4">
+                              <label className="block text-sm font-medium mb-1">Quick Out Quantities</label>
+                              <input
+                                  type="text"
+                                  value={formData.quick_out_quantities}
+                                  onChange={(e) => setFormData({...formData, quick_out_quantities: e.target.value})}
+                                  className="w-full p-2 border rounded"
+                                  placeholder="e.g. 1, 10, 20, 50"
+                              />
+                              <p className="text-xs text-gray-500 mt-1">
+                                  Comma-separated values for quick selection buttons on Stock Out.
+                                  Received Pack Size will be added automatically.
+                              </p>
+                          </div>
                           <div className="flex justify-end gap-2 pt-4">
                               <button
                                   type="button"
@@ -1315,7 +1330,8 @@
               online_pack_size: product.online_pack_size || product.onlinePackSize || '',
               received_pack_size: product.received_pack_size || product.receivedPackSize || '',
               supplier: product.supplier || 'MacFarlane',
-              low_stock_threshold: product.low_stock_threshold !== undefined ? product.low_stock_threshold : product.lowStockThreshold || 10
+              low_stock_threshold: product.low_stock_threshold !== undefined ? product.low_stock_threshold : product.lowStockThreshold || 10,
+              quick_out_quantities: product.quick_out_quantities || ''
           });
 
           const handleSubmit = (e) => {
@@ -1408,6 +1424,20 @@
                                   />
                               </div>
                           </div>
+                          <div className="mt-4">
+                              <label className="block text-sm font-medium mb-1">Quick Out Quantities</label>
+                              <input
+                                  type="text"
+                                  value={formData.quick_out_quantities}
+                                  onChange={(e) => setFormData({...formData, quick_out_quantities: e.target.value})}
+                                  className="w-full p-2 border rounded"
+                                  placeholder="e.g. 1, 10, 20, 50"
+                              />
+                              <p className="text-xs text-gray-500 mt-1">
+                                  Comma-separated values for quick selection buttons on Stock Out.
+                                  Received Pack Size will be added automatically.
+                              </p>
+                          </div>
                           <div className="flex justify-between pt-4 border-t mt-6">
                               <button
                                   type="button"
@@ -1439,6 +1469,39 @@
       };
 
       const StockMovementModal = ({ product, type, quantity, notes, onQuantityChange, onNotesChange, onClose, onSubmit }) => {
+          // Get pack sizes
+          const packSize = product.online_pack_size || product.onlinePackSize || 'N/A';
+          const receivedPackSize = product.received_pack_size || product.receivedPackSize || '';
+          const currentStock = product.current_stock !== undefined ? product.current_stock : product.currentStock;
+
+          // Build quick quantities array (only for OUT)
+          const getQuickQuantities = () => {
+              if (type !== 'out') return [];
+
+              const quantities = new Set();
+
+              // Add custom quick quantities
+              const customQty = product.quick_out_quantities || '';
+              if (customQty) {
+                  customQty.split(',').forEach(q => {
+                      const num = parseInt(q.trim());
+                      if (num > 0) quantities.add(num);
+                  });
+              }
+
+              // Add received pack size if it's a number
+              const receivedNum = parseInt(receivedPackSize);
+              if (receivedNum > 0) {
+                  quantities.add(receivedNum);
+              }
+
+              // Sort and return
+              return Array.from(quantities).sort((a, b) => a - b);
+          };
+
+          const quickQuantities = getQuickQuantities();
+          const receivedPackNum = parseInt(receivedPackSize);
+
           return (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                   <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
@@ -1447,11 +1510,51 @@
                               Stock {type === 'in' ? 'IN' : 'OUT'}: {product.in_house_name || product.inHouseName}
                           </h2>
                           <p className="text-sm text-gray-600 mt-1">Code: {product.product_code || product.productCode}</p>
-                          <p className="text-sm text-gray-600">Current Stock: {product.current_stock !== undefined ? product.current_stock : product.currentStock}</p>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm">
+                              <span className="text-gray-600">
+                                  <span className="font-medium">Pack Size:</span> {packSize}
+                              </span>
+                              {receivedPackSize && (
+                                  <span className="text-gray-600">
+                                      <span className="font-medium">Received Pack:</span> {receivedPackSize}
+                                  </span>
+                              )}
+                              <span className={`font-medium ${currentStock <= (product.low_stock_threshold || 10) ? 'text-red-600' : 'text-green-600'}`}>
+                                  Stock: {currentStock}
+                              </span>
+                          </div>
                       </div>
                       <div className="p-6 space-y-4">
+                          {/* Quick Select Buttons (OUT only) */}
+                          {type === 'out' && quickQuantities.length > 0 && (
+                              <div>
+                                  <label className="block text-sm font-medium mb-2">Quick Select</label>
+                                  <div className="flex flex-wrap gap-2">
+                                      {quickQuantities.map(qty => (
+                                          <button
+                                              key={qty}
+                                              type="button"
+                                              onClick={() => onQuantityChange(qty.toString())}
+                                              className={`px-4 py-2 rounded-lg border-2 transition font-medium ${
+                                                  parseInt(quantity) === qty
+                                                      ? 'border-red-500 bg-red-50 text-red-700'
+                                                      : 'border-gray-300 hover:border-red-300 hover:bg-red-50'
+                                              }`}
+                                          >
+                                              {qty}
+                                              {qty === receivedPackNum && (
+                                                  <span className="text-xs ml-1 text-gray-500">(Pack)</span>
+                                              )}
+                                          </button>
+                                      ))}
+                                  </div>
+                              </div>
+                          )}
+
                           <div>
-                              <label className="block text-sm font-medium mb-1">Quantity *</label>
+                              <label className="block text-sm font-medium mb-1">
+                                  {type === 'out' && quickQuantities.length > 0 ? 'Or enter quantity *' : 'Quantity *'}
+                              </label>
                               <input
                                   type="number"
                                   required
@@ -1459,7 +1562,7 @@
                                   value={quantity}
                                   onChange={(e) => onQuantityChange(e.target.value)}
                                   className="w-full p-2 border rounded"
-                                  autoFocus
+                                  autoFocus={type === 'in' || quickQuantities.length === 0}
                               />
                           </div>
                           <div>
