@@ -9,12 +9,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <div id="root"></div>
 
     <script type="text/babel">
-      const { useState, useEffect } = React;
+      const { useState, useEffect, useRef } = React;
 
       // Initialize Supabase client
       const SUPABASE_URL = 'https://zsskdgkqlcuwwarlqwsz.supabase.co';
@@ -828,6 +829,10 @@
           const [dateRange, setDateRange] = useState('3months');
           const [customStart, setCustomStart] = useState('');
           const [customEnd, setCustomEnd] = useState('');
+          const barChartRef = useRef(null);
+          const lineChartRef = useRef(null);
+          const barChartInstance = useRef(null);
+          const lineChartInstance = useRef(null);
 
           // Calculate date range
           const getDateRange = () => {
@@ -893,6 +898,137 @@
 
           // Calculate days in range for daily average
           const daysInRange = Math.max(1, Math.ceil((rangeEnd - rangeStart) / (1000 * 60 * 60 * 24)));
+
+          // Calculate usage over time (weekly buckets)
+          const getUsageOverTime = () => {
+              const weeklyData = {};
+              usageMovements.forEach(m => {
+                  const date = new Date(m.timestamp);
+                  // Get start of week (Monday)
+                  const day = date.getDay();
+                  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+                  const weekStart = new Date(date.setDate(diff));
+                  const weekKey = weekStart.toISOString().split('T')[0];
+
+                  if (!weeklyData[weekKey]) {
+                      weeklyData[weekKey] = 0;
+                  }
+                  weeklyData[weekKey] += m.quantity;
+              });
+
+              // Sort by date and return
+              const sortedWeeks = Object.keys(weeklyData).sort();
+              return {
+                  labels: sortedWeeks.map(w => {
+                      const date = new Date(w);
+                      return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                  }),
+                  data: sortedWeeks.map(w => weeklyData[w])
+              };
+          };
+
+          const timeData = getUsageOverTime();
+
+          // Chart colors
+          const chartColors = [
+              'rgba(99, 102, 241, 0.8)',   // indigo
+              'rgba(34, 197, 94, 0.8)',    // green
+              'rgba(249, 115, 22, 0.8)',   // orange
+              'rgba(236, 72, 153, 0.8)',   // pink
+              'rgba(14, 165, 233, 0.8)',   // sky
+              'rgba(168, 85, 247, 0.8)',   // purple
+              'rgba(234, 179, 8, 0.8)',    // yellow
+              'rgba(239, 68, 68, 0.8)',    // red
+          ];
+
+          // Update charts when data changes
+          useEffect(() => {
+              // Bar Chart - Usage by Product
+              if (barChartRef.current && usageList.length > 0) {
+                  if (barChartInstance.current) {
+                      barChartInstance.current.destroy();
+                  }
+
+                  barChartInstance.current = new Chart(barChartRef.current, {
+                      type: 'bar',
+                      data: {
+                          labels: usageList.map(item => item.productName),
+                          datasets: [{
+                              label: 'Total Usage',
+                              data: usageList.map(item => item.totalUsage),
+                              backgroundColor: chartColors.slice(0, usageList.length),
+                              borderRadius: 6,
+                          }]
+                      },
+                      options: {
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                              legend: { display: false },
+                              title: {
+                                  display: true,
+                                  text: 'Usage by Product',
+                                  font: { size: 16, weight: 'bold' }
+                              }
+                          },
+                          scales: {
+                              y: {
+                                  beginAtZero: true,
+                                  ticks: { precision: 0 }
+                              }
+                          }
+                      }
+                  });
+              }
+
+              // Line Chart - Usage Over Time
+              if (lineChartRef.current && timeData.labels.length > 0) {
+                  if (lineChartInstance.current) {
+                      lineChartInstance.current.destroy();
+                  }
+
+                  lineChartInstance.current = new Chart(lineChartRef.current, {
+                      type: 'line',
+                      data: {
+                          labels: timeData.labels,
+                          datasets: [{
+                              label: 'Weekly Usage',
+                              data: timeData.data,
+                              borderColor: 'rgba(99, 102, 241, 1)',
+                              backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                              fill: true,
+                              tension: 0.3,
+                              pointRadius: 4,
+                              pointHoverRadius: 6,
+                          }]
+                      },
+                      options: {
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                              legend: { display: false },
+                              title: {
+                                  display: true,
+                                  text: 'Usage Over Time (Weekly)',
+                                  font: { size: 16, weight: 'bold' }
+                              }
+                          },
+                          scales: {
+                              y: {
+                                  beginAtZero: true,
+                                  ticks: { precision: 0 }
+                              }
+                          }
+                      }
+                  });
+              }
+
+              // Cleanup on unmount
+              return () => {
+                  if (barChartInstance.current) barChartInstance.current.destroy();
+                  if (lineChartInstance.current) lineChartInstance.current.destroy();
+              };
+          }, [usageList, timeData, dateRange, customStart, customEnd]);
 
           const dateRangeOptions = [
               { value: '1month', label: '1 Month' },
@@ -965,6 +1101,22 @@
                           </div>
                       </div>
                   </div>
+
+                  {/* Charts */}
+                  {usageList.length > 0 && (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                          <div className="bg-white rounded-lg shadow p-6">
+                              <div style={{ height: '300px' }}>
+                                  <canvas ref={barChartRef}></canvas>
+                              </div>
+                          </div>
+                          <div className="bg-white rounded-lg shadow p-6">
+                              <div style={{ height: '300px' }}>
+                                  <canvas ref={lineChartRef}></canvas>
+                              </div>
+                          </div>
+                      </div>
+                  )}
 
                   {/* Usage by Product Table */}
                   <div className="bg-white rounded-lg shadow overflow-x-auto">
