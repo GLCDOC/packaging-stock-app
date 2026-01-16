@@ -1,0 +1,10 @@
+# Claude Code temporary files
+claude-*-cwd
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
