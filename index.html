@@ -600,7 +600,7 @@
                                   <th className={`px-4 py-3 text-right text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Actions</th>
                               </tr>
                           </thead>
-                          <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : ''}`}>
+                          <tbody className={`divide-y ${darkMode ? 'divide-gray-700 bg-gray-800' : 'bg-white'}`}>
                               {filteredProducts.map(product => {
                                   const currentStock = product.current_stock !== undefined ? product.current_stock : product.currentStock;
                                   const threshold = product.low_stock_threshold !== undefined ? product.low_stock_threshold : product.lowStockThreshold;
@@ -727,7 +727,7 @@
                                               <th className="pb-2 text-right">Action</th>
                                           </tr>
                                       </thead>
-                                      <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : ''}`}>
+                                      <tbody className={`divide-y ${darkMode ? 'divide-gray-700 bg-gray-800' : 'bg-white'}`}>
                                           {order.items.map((item, idx) => {
                                               const receivedQty = item.received_qty || 0;
                                               const orderedQty = parseInt(item.quantity);
@@ -822,7 +822,7 @@
                                   <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Notes</th>
                               </tr>
                           </thead>
-                          <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : ''}`}>
+                          <tbody className={`divide-y ${darkMode ? 'divide-gray-700 bg-gray-800' : 'bg-white'}`}>
                               {filteredMovements.map(movement => (
                                   <tr key={movement.id} className={`${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
                                       <td className="px-4 py-3 text-sm">
@@ -1188,7 +1188,7 @@
                                   <th className={`px-4 py-3 text-right text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>% of Total</th>
                               </tr>
                           </thead>
-                          <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : ''}`}>
+                          <tbody className={`divide-y ${darkMode ? 'divide-gray-700 bg-gray-800' : 'bg-white'}`}>
                               {usageList.map(item => {
                                   const percentage = totalUsage > 0 ? ((item.totalUsage / totalUsage) * 100).toFixed(1) : 0;
                                   const dailyAvg = Math.round(item.totalUsage / daysInRange);
@@ -1910,7 +1910,7 @@
                                                   <th className={`px-4 py-2 text-right text-xs font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Action</th>
                                               </tr>
                                           </thead>
-                                          <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : ''}`}>
+                                          <tbody className={`divide-y ${darkMode ? 'divide-gray-700 bg-gray-800' : 'bg-white'}`}>
                                               {orderItems.map((item, idx) => (
                                                   <tr key={idx}>
                                                       <td className="px-4 py-2 text-sm">{item.productCode}</td>
