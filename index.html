@@ -1011,13 +1011,28 @@
                               title: {
                                   display: true,
                                   text: 'Usage by Product',
-                                  font: { size: 16, weight: 'bold' }
+                                  font: { size: 16, weight: 'bold' },
+                                  color: darkMode ? '#f3f4f6' : '#374151'
                               }
                           },
                           scales: {
                               y: {
                                   beginAtZero: true,
-                                  ticks: { precision: 0 }
+                                  ticks: {
+                                      precision: 0,
+                                      color: darkMode ? '#d1d5db' : '#6b7280'
+                                  },
+                                  grid: {
+                                      color: darkMode ? '#374151' : '#e5e7eb'
+                                  }
+                              },
+                              x: {
+                                  ticks: {
+                                      color: darkMode ? '#d1d5db' : '#6b7280'
+                                  },
+                                  grid: {
+                                      color: darkMode ? '#374151' : '#e5e7eb'
+                                  }
                               }
                           }
                       }
@@ -1053,13 +1068,28 @@
                               title: {
                                   display: true,
                                   text: 'Usage Over Time (Weekly)',
-                                  font: { size: 16, weight: 'bold' }
+                                  font: { size: 16, weight: 'bold' },
+                                  color: darkMode ? '#f3f4f6' : '#374151'
                               }
                           },
                           scales: {
                               y: {
                                   beginAtZero: true,
-                                  ticks: { precision: 0 }
+                                  ticks: {
+                                      precision: 0,
+                                      color: darkMode ? '#d1d5db' : '#6b7280'
+                                  },
+                                  grid: {
+                                      color: darkMode ? '#374151' : '#e5e7eb'
+                                  }
+                              },
+                              x: {
+                                  ticks: {
+                                      color: darkMode ? '#d1d5db' : '#6b7280'
+                                  },
+                                  grid: {
+                                      color: darkMode ? '#374151' : '#e5e7eb'
+                                  }
                               }
                           }
                       }
@@ -1127,29 +1157,29 @@
                   {/* Summary Cards */}
                   <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
                       <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
-                          <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Usage</div>
+                          <div className={`text-sm mb-1 ${darkMode ? 'text-gray-200' : 'text-gray-600'}`}>Total Usage</div>
                           <div className="text-3xl font-bold text-indigo-600">{totalUsage.toLocaleString()}</div>
-                          <div className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>items used</div>
+                          <div className={`text-xs mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>items used</div>
                       </div>
                       <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
-                          <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Cost</div>
+                          <div className={`text-sm mb-1 ${darkMode ? 'text-gray-200' : 'text-gray-600'}`}>Total Cost</div>
                           <div className="text-3xl font-bold text-red-600">£{totalCost.toFixed(2)}</div>
-                          <div className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>for period</div>
+                          <div className={`text-xs mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>for period</div>
                       </div>
                       <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
-                          <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Daily Average</div>
+                          <div className={`text-sm mb-1 ${darkMode ? 'text-gray-200' : 'text-gray-600'}`}>Daily Average</div>
                           <div className="text-3xl font-bold text-green-600">{Math.round(totalUsage / daysInRange).toLocaleString()}</div>
-                          <div className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>items per day</div>
+                          <div className={`text-xs mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>items per day</div>
                       </div>
                       <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
-                          <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Daily Cost</div>
+                          <div className={`text-sm mb-1 ${darkMode ? 'text-gray-200' : 'text-gray-600'}`}>Daily Cost</div>
                           <div className="text-3xl font-bold text-orange-600">£{(totalCost / daysInRange).toFixed(2)}</div>
-                          <div className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>per day</div>
+                          <div className={`text-xs mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>per day</div>
                       </div>
                       <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
-                          <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Period</div>
-                          <div className={`text-lg font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{daysInRange} days</div>
-                          <div className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                          <div className={`text-sm mb-1 ${darkMode ? 'text-gray-200' : 'text-gray-600'}`}>Period</div>
+                          <div className={`text-lg font-bold ${darkMode ? 'text-gray-100' : 'text-gray-700'}`}>{daysInRange} days</div>
+                          <div className={`text-xs mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
                               {rangeStart.toLocaleDateString()} - {rangeEnd.toLocaleDateString()}
                           </div>
                       </div>
