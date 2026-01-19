@@ -1138,7 +1138,7 @@
                                       type="date"
                                       value={customStart}
                                       onChange={(e) => setCustomStart(e.target.value)}
-                                      className="p-2 border rounded"
+                                      className={`p-2 border rounded ${darkMode ? 'bg-gray-600 border-gray-500 text-white' : ''}`}
                                   />
                               </div>
                               <div>
@@ -1147,7 +1147,7 @@
                                       type="date"
                                       value={customEnd}
                                       onChange={(e) => setCustomEnd(e.target.value)}
-                                      className="p-2 border rounded"
+                                      className={`p-2 border rounded ${darkMode ? 'bg-gray-600 border-gray-500 text-white' : ''}`}
                                   />
                               </div>
                           </div>
