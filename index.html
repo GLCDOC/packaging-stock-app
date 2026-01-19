@@ -321,16 +321,16 @@
 
           if (!currentUser) {
               return (
-                  <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-                      <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md">
+                  <div className={`min-h-screen flex items-center justify-center p-4 ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-indigo-100'}`}>
+                      <div className={`rounded-xl shadow-2xl p-8 w-full max-w-md ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
                           <div className="text-center mb-8">
                               <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
                                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                   </svg>
                               </div>
-                              <h1 className="text-3xl font-bold text-gray-800">Packaging Stock</h1>
-                              <p className="text-gray-600 mt-2">Enter your PIN to continue</p>
+                              <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Packaging Stock</h1>
+                              <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Enter your PIN to continue</p>
                           </div>
                           <form onSubmit={handlePinSubmit}>
                               <input
@@ -339,7 +339,7 @@
                                   onChange={(e) => setPinInput(e.target.value)}
                                   placeholder="Enter 4-digit PIN"
                                   maxLength="4"
-                                  className="w-full p-4 text-center text-2xl border-2 border-gray-300 rounded-lg focus:border-indigo-600 focus:outline-none"
+                                  className={`w-full p-4 text-center text-2xl border-2 rounded-lg focus:border-indigo-600 focus:outline-none ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'border-gray-300'}`}
                                   autoFocus
                               />
                               <button
@@ -460,6 +460,7 @@
 
                   {showAddProduct && (
                       <AddProductModal
+                          darkMode={darkMode}
                           onClose={() => setShowAddProduct(false)}
                           onAdd={addProduct}
                       />
@@ -467,6 +468,7 @@
 
                   {showEditProduct && selectedProduct && (
                       <EditProductModal
+                          darkMode={darkMode}
                           product={selectedProduct}
                           onClose={() => {
                               setShowEditProduct(false);
@@ -483,6 +485,7 @@
 
                   {showStockMovement && (
                       <StockMovementModal
+                          darkMode={darkMode}
                           product={selectedProduct}
                           type={movementType}
                           quantity={movementQty}
@@ -501,6 +504,7 @@
 
                   {showOrderForm && (
                       <OrderFormModal
+                          darkMode={darkMode}
                           products={products}
                           onClose={() => setShowOrderForm(false)}
                           onSubmit={createOrder}
@@ -509,6 +513,7 @@
 
                   {showPartialReceive && selectedOrderItem && (
                       <PartialReceiveModal
+                          darkMode={darkMode}
                           orderItem={selectedOrderItem}
                           onClose={() => {
                               setShowPartialReceive(false);
@@ -603,8 +608,8 @@
                                   <tr key={product.id} className={`${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
                                       <td className="px-4 py-3 text-sm font-medium">{product.product_code || product.productCode}</td>
                                       <td className="px-4 py-3 text-sm">{product.in_house_name || product.inHouseName}</td>
-                                      <td className="px-4 py-3 text-sm text-gray-600">{product.size || '-'}</td>
-                                      <td className="px-4 py-3 text-sm text-gray-600">{product.online_pack_size || product.onlinePackSize || '-'}</td>
+                                      <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{product.size || '-'}</td>
+                                      <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{product.online_pack_size || product.onlinePackSize || '-'}</td>
                                       <td className="px-4 py-3 text-sm font-semibold">{currentStock}</td>
                                       <td className="px-4 py-3">
                                           {currentStock <= threshold ? (
@@ -619,12 +624,12 @@
                                           <div className="flex justify-end items-center gap-2">
                                               <button
                                                   onClick={() => onEditProduct(product)}
-                                                  className="bg-gray-100 text-gray-600 px-3 py-1 rounded hover:bg-gray-200 transition text-sm"
+                                                  className={`px-3 py-1 rounded transition text-sm ${darkMode ? 'bg-gray-600 text-gray-200 hover:bg-gray-500' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                                                   title="Edit product"
                                               >
                                                   Edit
                                               </button>
-                                              <span className="border-l border-gray-300 h-6 mx-1"></span>
+                                              <span className={`border-l h-6 mx-1 ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}></span>
                                               <button
                                                   onClick={() => onStockIn(product)}
                                                   className="bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-green-200 transition text-sm"
@@ -654,7 +659,7 @@
           );
       };
 
-      const OrdersView = ({ orders, onCreateOrder, onReceiveItem }) => {
+      const OrdersView = ({ orders, onCreateOrder, onReceiveItem, darkMode }) => {
           const [filterStatus, setFilterStatus] = useState('all');
 
           const filteredOrders = orders.filter(order => {
@@ -673,7 +678,7 @@
                                   className={`px-4 py-2 rounded-lg capitalize transition ${
                                       filterStatus === status
                                           ? 'bg-indigo-600 text-white'
-                                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                          : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                   }`}
                               >
                                   {status}
@@ -690,14 +695,14 @@
 
                   <div className="space-y-4">
                       {filteredOrders.map(order => (
-                          <div key={order.id} className="bg-white rounded-lg shadow p-6">
+                          <div key={order.id} className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
                               <div className="flex justify-between items-start mb-4">
                                   <div>
                                       <h3 className="text-lg font-semibold">Order #{order.id}</h3>
-                                      <p className="text-sm text-gray-600">
+                                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                           Created by {order.created_by || order.createdBy} on {new Date(order.created_at || order.createdAt).toLocaleDateString()}
                                       </p>
-                                      <p className="text-sm text-gray-600">
+                                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                           Supplier: {order.supplier} | Expected: {new Date(order.expected_date || order.expectedDate).toLocaleDateString()}
                                       </p>
                                   </div>
@@ -710,10 +715,10 @@
                                   </span>
                               </div>
 
-                              <div className="border-t pt-4 overflow-x-auto">
+                              <div className={`border-t pt-4 overflow-x-auto ${darkMode ? 'border-gray-700' : ''}`}>
                                   <table className="w-full">
                                       <thead>
-                                          <tr className="text-left text-xs text-gray-600 uppercase">
+                                          <tr className={`text-left text-xs uppercase ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                               <th className="pb-2">Product Code</th>
                                               <th className="pb-2">Product Name</th>
                                               <th className="pb-2">Ordered</th>
@@ -722,7 +727,7 @@
                                               <th className="pb-2 text-right">Action</th>
                                           </tr>
                                       </thead>
-                                      <tbody className="divide-y">
+                                      <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : ''}`}>
                                           {order.items.map((item, idx) => {
                                               const receivedQty = item.received_qty || 0;
                                               const orderedQty = parseInt(item.quantity);
@@ -771,7 +776,7 @@
                   </div>
 
                   {filteredOrders.length === 0 && (
-                      <div className="bg-white rounded-lg shadow p-12 text-center text-gray-500">
+                      <div className={`${darkMode ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'} rounded-lg shadow p-12 text-center`}>
                           No orders found
                       </div>
                   )}
@@ -779,7 +784,7 @@
           );
       };
 
-      const MovementsView = ({ movements }) => {
+      const MovementsView = ({ movements, darkMode }) => {
           const [filterType, setFilterType] = useState('all');
 
           const filteredMovements = movements.filter(m => {
@@ -797,7 +802,7 @@
                               className={`px-4 py-2 rounded-lg capitalize transition ${
                                   filterType === type
                                       ? 'bg-indigo-600 text-white'
-                                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                      : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                               }`}
                           >
                               {type === 'all' ? 'All Movements' : `Stock ${type}`}
@@ -805,21 +810,21 @@
                       ))}
                   </div>
 
-                  <div className="bg-white rounded-lg shadow overflow-x-auto">
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow overflow-x-auto`}>
                       <table className="w-full">
-                          <thead className="bg-gray-50 border-b">
+                          <thead className={`${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50'} border-b`}>
                               <tr>
-                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date/Time</th>
-                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Type</th>
-                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Product</th>
-                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Quantity</th>
-                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">User</th>
-                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Notes</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Date/Time</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Type</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Product</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Quantity</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>User</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Notes</th>
                               </tr>
                           </thead>
-                          <tbody className="divide-y">
+                          <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : ''}`}>
                               {filteredMovements.map(movement => (
-                                  <tr key={movement.id} className="hover:bg-gray-50">
+                                  <tr key={movement.id} className={`${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
                                       <td className="px-4 py-3 text-sm">
                                           {new Date(movement.timestamp).toLocaleString()}
                                       </td>
@@ -834,17 +839,17 @@
                                       </td>
                                       <td className="px-4 py-3 text-sm">
                                           <div className="font-medium">{movement.product_name || movement.productName}</div>
-                                          <div className="text-gray-600 text-xs">{movement.product_code || movement.productCode}</div>
+                                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{movement.product_code || movement.productCode}</div>
                                       </td>
                                       <td className="px-4 py-3 text-sm font-semibold">{movement.quantity}</td>
                                       <td className="px-4 py-3 text-sm">{movement.user_name || movement.user}</td>
-                                      <td className="px-4 py-3 text-sm text-gray-600">{movement.notes || '-'}</td>
+                                      <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{movement.notes || '-'}</td>
                                   </tr>
                               ))}
                           </tbody>
                       </table>
                       {filteredMovements.length === 0 && (
-                          <div className="text-center py-12 text-gray-500">
+                          <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                               No movements recorded
                           </div>
                       )}
@@ -853,7 +858,7 @@
           );
       };
 
-      const UsageView = ({ movements, products }) => {
+      const UsageView = ({ movements, products, darkMode }) => {
           const [dateRange, setDateRange] = useState('3months');
           const [customStart, setCustomStart] = useState('');
           const [customEnd, setCustomEnd] = useState('');
@@ -1087,7 +1092,7 @@
                                   className={`px-4 py-2 rounded-lg transition ${
                                       dateRange === option.value
                                           ? 'bg-indigo-600 text-white'
-                                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                          : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                   }`}
                               >
                                   {option.label}
@@ -1096,7 +1101,7 @@
                       </div>
 
                       {dateRange === 'custom' && (
-                          <div className="flex flex-wrap gap-4 p-4 bg-gray-100 rounded-lg">
+                          <div className={`flex flex-wrap gap-4 p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
                               <div>
                                   <label className="block text-sm font-medium mb-1">Start Date</label>
                                   <input
@@ -1121,30 +1126,30 @@
 
                   {/* Summary Cards */}
                   <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-                      <div className="bg-white rounded-lg shadow p-6">
-                          <div className="text-sm text-gray-600 mb-1">Total Usage</div>
+                      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+                          <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Usage</div>
                           <div className="text-3xl font-bold text-indigo-600">{totalUsage.toLocaleString()}</div>
-                          <div className="text-xs text-gray-500 mt-1">items used</div>
+                          <div className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>items used</div>
                       </div>
-                      <div className="bg-white rounded-lg shadow p-6">
-                          <div className="text-sm text-gray-600 mb-1">Total Cost</div>
+                      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+                          <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Cost</div>
                           <div className="text-3xl font-bold text-red-600">£{totalCost.toFixed(2)}</div>
-                          <div className="text-xs text-gray-500 mt-1">for period</div>
+                          <div className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>for period</div>
                       </div>
-                      <div className="bg-white rounded-lg shadow p-6">
-                          <div className="text-sm text-gray-600 mb-1">Daily Average</div>
+                      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+                          <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Daily Average</div>
                           <div className="text-3xl font-bold text-green-600">{Math.round(totalUsage / daysInRange).toLocaleString()}</div>
-                          <div className="text-xs text-gray-500 mt-1">items per day</div>
+                          <div className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>items per day</div>
                       </div>
-                      <div className="bg-white rounded-lg shadow p-6">
-                          <div className="text-sm text-gray-600 mb-1">Daily Cost</div>
+                      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+                          <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Daily Cost</div>
                           <div className="text-3xl font-bold text-orange-600">£{(totalCost / daysInRange).toFixed(2)}</div>
-                          <div className="text-xs text-gray-500 mt-1">per day</div>
+                          <div className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>per day</div>
                       </div>
-                      <div className="bg-white rounded-lg shadow p-6">
-                          <div className="text-sm text-gray-600 mb-1">Period</div>
-                          <div className="text-lg font-bold text-gray-700">{daysInRange} days</div>
-                          <div className="text-xs text-gray-500 mt-1">
+                      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
+                          <div className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Period</div>
+                          <div className={`text-lg font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{daysInRange} days</div>
+                          <div className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                               {rangeStart.toLocaleDateString()} - {rangeEnd.toLocaleDateString()}
                           </div>
                       </div>
@@ -1153,12 +1158,12 @@
                   {/* Charts */}
                   {usageList.length > 0 && (
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                          <div className="bg-white rounded-lg shadow p-6">
+                          <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
                               <div style={{ height: '300px' }}>
                                   <canvas ref={barChartRef}></canvas>
                               </div>
                           </div>
-                          <div className="bg-white rounded-lg shadow p-6">
+                          <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
                               <div style={{ height: '300px' }}>
                                   <canvas ref={lineChartRef}></canvas>
                               </div>
@@ -1167,32 +1172,32 @@
                   )}
 
                   {/* Usage by Product Table */}
-                  <div className="bg-white rounded-lg shadow overflow-x-auto">
-                      <div className="p-4 border-b">
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow overflow-x-auto`}>
+                      <div className={`p-4 border-b ${darkMode ? 'border-gray-700' : ''}`}>
                           <h3 className="font-semibold text-lg">Usage by Product</h3>
                       </div>
                       <table className="w-full">
-                          <thead className="bg-gray-50 border-b">
+                          <thead className={`${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50'} border-b`}>
                               <tr>
-                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Product</th>
-                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Code</th>
-                                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Total Used</th>
-                                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Unit Cost</th>
-                                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Total Cost</th>
-                                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Daily Avg</th>
-                                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">% of Total</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Product</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Code</th>
+                                  <th className={`px-4 py-3 text-right text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Total Used</th>
+                                  <th className={`px-4 py-3 text-right text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Unit Cost</th>
+                                  <th className={`px-4 py-3 text-right text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Total Cost</th>
+                                  <th className={`px-4 py-3 text-right text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Daily Avg</th>
+                                  <th className={`px-4 py-3 text-right text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>% of Total</th>
                               </tr>
                           </thead>
-                          <tbody className="divide-y">
+                          <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : ''}`}>
                               {usageList.map(item => {
                                   const percentage = totalUsage > 0 ? ((item.totalUsage / totalUsage) * 100).toFixed(1) : 0;
                                   const dailyAvg = Math.round(item.totalUsage / daysInRange);
                                   return (
-                                      <tr key={item.productCode} className="hover:bg-gray-50">
+                                      <tr key={item.productCode} className={`${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
                                           <td className="px-4 py-3 text-sm font-medium">{item.productName}</td>
-                                          <td className="px-4 py-3 text-sm text-gray-600">{item.productCode}</td>
+                                          <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{item.productCode}</td>
                                           <td className="px-4 py-3 text-sm font-semibold text-right">{item.totalUsage.toLocaleString()}</td>
-                                          <td className="px-4 py-3 text-sm text-right text-gray-600">
+                                          <td className={`px-4 py-3 text-sm text-right ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                               {item.unitCost > 0 ? `£${item.unitCost.toFixed(4)}` : '-'}
                                           </td>
                                           <td className="px-4 py-3 text-sm font-semibold text-right text-red-600">
@@ -1201,7 +1206,7 @@
                                           <td className="px-4 py-3 text-sm text-right">{dailyAvg.toLocaleString()}</td>
                                           <td className="px-4 py-3 text-right">
                                               <div className="flex items-center justify-end gap-2">
-                                                  <div className="w-16 bg-gray-200 rounded-full h-2">
+                                                  <div className={`w-16 rounded-full h-2 ${darkMode ? 'bg-gray-600' : 'bg-gray-200'}`}>
                                                       <div
                                                           className="bg-indigo-600 h-2 rounded-full"
                                                           style={{ width: `${percentage}%` }}
@@ -1215,7 +1220,7 @@
                               })}
                           </tbody>
                           {usageList.length > 0 && (
-                              <tfoot className="bg-gray-50 border-t font-semibold">
+                              <tfoot className={`${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50'} border-t font-semibold`}>
                                   <tr>
                                       <td className="px-4 py-3 text-sm">Total</td>
                                       <td className="px-4 py-3"></td>
@@ -1229,7 +1234,7 @@
                           )}
                       </table>
                       {usageList.length === 0 && (
-                          <div className="text-center py-12 text-gray-500">
+                          <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                               No usage data for selected period
                           </div>
                       )}
@@ -1238,7 +1243,7 @@
           );
       };
 
-      const AddProductModal = ({ onClose, onAdd }) => {
+      const AddProductModal = ({ onClose, onAdd, darkMode }) => {
           const [formData, setFormData] = useState({
               product_code: '',
               size: '',
@@ -1257,113 +1262,116 @@
               onAdd(formData);
           };
 
+          const inputClass = `w-full p-2 border rounded ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`;
+          const labelClass = `block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : ''}`;
+
           return (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                  <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                      <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white">
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto`}>
+                      <div className={`p-6 border-b flex justify-between items-center sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'}`}>
                           <h2 className="text-xl font-bold">Add New Product</h2>
-                          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                          <button onClick={onClose} className={`text-2xl ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>×</button>
                       </div>
                       <form onSubmit={handleSubmit} className="p-6 space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Product Code *</label>
+                                  <label className={labelClass}>Product Code *</label>
                                   <input
                                       type="text"
                                       required
                                       value={formData.product_code}
                                       onChange={(e) => setFormData({...formData, product_code: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Size</label>
+                                  <label className={labelClass}>Size</label>
                                   <input
                                       type="text"
                                       value={formData.size}
                                       onChange={(e) => setFormData({...formData, size: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">In House Name *</label>
+                                  <label className={labelClass}>In House Name *</label>
                                   <input
                                       type="text"
                                       required
                                       value={formData.in_house_name}
                                       onChange={(e) => setFormData({...formData, in_house_name: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Product Name *</label>
+                                  <label className={labelClass}>Product Name *</label>
                                   <input
                                       type="text"
                                       required
                                       value={formData.product_name}
                                       onChange={(e) => setFormData({...formData, product_name: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Online Pack Size</label>
+                                  <label className={labelClass}>Online Pack Size</label>
                                   <input
                                       type="text"
                                       value={formData.online_pack_size}
                                       onChange={(e) => setFormData({...formData, online_pack_size: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Received Pack Size</label>
+                                  <label className={labelClass}>Received Pack Size</label>
                                   <input
                                       type="text"
                                       value={formData.received_pack_size}
                                       onChange={(e) => setFormData({...formData, received_pack_size: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Supplier</label>
+                                  <label className={labelClass}>Supplier</label>
                                   <input
                                       type="text"
                                       value={formData.supplier}
                                       onChange={(e) => setFormData({...formData, supplier: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Low Stock Threshold</label>
+                                  <label className={labelClass}>Low Stock Threshold</label>
                                   <input
                                       type="number"
                                       value={formData.low_stock_threshold}
                                       onChange={(e) => setFormData({...formData, low_stock_threshold: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Unit Cost (£)</label>
+                                  <label className={labelClass}>Unit Cost (£)</label>
                                   <input
                                       type="number"
                                       step="0.0001"
                                       min="0"
                                       value={formData.unit_cost}
                                       onChange={(e) => setFormData({...formData, unit_cost: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                       placeholder="0.00"
                                   />
                               </div>
                           </div>
                           <div className="mt-4">
-                              <label className="block text-sm font-medium mb-1">Quick Out Quantities</label>
+                              <label className={labelClass}>Quick Out Quantities</label>
                               <input
                                   type="text"
                                   value={formData.quick_out_quantities}
                                   onChange={(e) => setFormData({...formData, quick_out_quantities: e.target.value})}
-                                  className="w-full p-2 border rounded"
+                                  className={inputClass}
                                   placeholder="e.g. 1, 10, 20, 50"
                               />
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                   Comma-separated values for quick selection buttons on Stock Out.
                                   Received Pack Size will be added automatically.
                               </p>
@@ -1372,7 +1380,7 @@
                               <button
                                   type="button"
                                   onClick={onClose}
-                                  className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition"
+                                  className={`px-4 py-2 border rounded-lg transition ${darkMode ? 'border-gray-600 hover:bg-gray-700' : 'hover:bg-gray-50'}`}
                               >
                                   Cancel
                               </button>
@@ -1389,7 +1397,7 @@
           );
       };
 
-      const EditProductModal = ({ product, onClose, onUpdate, onDelete }) => {
+      const EditProductModal = ({ product, onClose, onUpdate, onDelete, darkMode }) => {
           const [formData, setFormData] = useState({
               product_code: product.product_code || product.productCode || '',
               size: product.size || '',
@@ -1408,118 +1416,121 @@
               onUpdate(formData);
           };
 
+          const inputClass = `w-full p-2 border rounded ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`;
+          const labelClass = `block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : ''}`;
+
           return (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                  <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                      <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white">
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto`}>
+                      <div className={`p-6 border-b flex justify-between items-center sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'}`}>
                           <h2 className="text-xl font-bold">Edit Product</h2>
-                          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                          <button onClick={onClose} className={`text-2xl ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>×</button>
                       </div>
                       <form onSubmit={handleSubmit} className="p-6 space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Product Code *</label>
+                                  <label className={labelClass}>Product Code *</label>
                                   <input
                                       type="text"
                                       required
                                       value={formData.product_code}
                                       onChange={(e) => setFormData({...formData, product_code: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Size</label>
+                                  <label className={labelClass}>Size</label>
                                   <input
                                       type="text"
                                       value={formData.size}
                                       onChange={(e) => setFormData({...formData, size: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">In House Name *</label>
+                                  <label className={labelClass}>In House Name *</label>
                                   <input
                                       type="text"
                                       required
                                       value={formData.in_house_name}
                                       onChange={(e) => setFormData({...formData, in_house_name: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Product Name *</label>
+                                  <label className={labelClass}>Product Name *</label>
                                   <input
                                       type="text"
                                       required
                                       value={formData.product_name}
                                       onChange={(e) => setFormData({...formData, product_name: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Online Pack Size</label>
+                                  <label className={labelClass}>Online Pack Size</label>
                                   <input
                                       type="text"
                                       value={formData.online_pack_size}
                                       onChange={(e) => setFormData({...formData, online_pack_size: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Received Pack Size</label>
+                                  <label className={labelClass}>Received Pack Size</label>
                                   <input
                                       type="text"
                                       value={formData.received_pack_size}
                                       onChange={(e) => setFormData({...formData, received_pack_size: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Supplier</label>
+                                  <label className={labelClass}>Supplier</label>
                                   <input
                                       type="text"
                                       value={formData.supplier}
                                       onChange={(e) => setFormData({...formData, supplier: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Low Stock Threshold</label>
+                                  <label className={labelClass}>Low Stock Threshold</label>
                                   <input
                                       type="number"
                                       value={formData.low_stock_threshold}
                                       onChange={(e) => setFormData({...formData, low_stock_threshold: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Unit Cost (£)</label>
+                                  <label className={labelClass}>Unit Cost (£)</label>
                                   <input
                                       type="number"
                                       step="0.0001"
                                       min="0"
                                       value={formData.unit_cost}
                                       onChange={(e) => setFormData({...formData, unit_cost: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                       placeholder="0.00"
                                   />
                               </div>
                           </div>
                           <div className="mt-4">
-                              <label className="block text-sm font-medium mb-1">Quick Out Quantities</label>
+                              <label className={labelClass}>Quick Out Quantities</label>
                               <input
                                   type="text"
                                   value={formData.quick_out_quantities}
                                   onChange={(e) => setFormData({...formData, quick_out_quantities: e.target.value})}
-                                  className="w-full p-2 border rounded"
+                                  className={inputClass}
                                   placeholder="e.g. 1, 10, 20, 50"
                               />
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                   Comma-separated values for quick selection buttons on Stock Out.
                                   Received Pack Size will be added automatically.
                               </p>
                           </div>
-                          <div className="flex justify-between pt-4 border-t mt-6">
+                          <div className={`flex justify-between pt-4 border-t mt-6 ${darkMode ? 'border-gray-700' : ''}`}>
                               <button
                                   type="button"
                                   onClick={onDelete}
@@ -1531,7 +1542,7 @@
                                   <button
                                       type="button"
                                       onClick={onClose}
-                                      className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition"
+                                      className={`px-4 py-2 border rounded-lg transition ${darkMode ? 'border-gray-600 hover:bg-gray-700' : 'hover:bg-gray-50'}`}
                                   >
                                       Cancel
                                   </button>
@@ -1549,7 +1560,7 @@
           );
       };
 
-      const StockMovementModal = ({ product, type, quantity, notes, onQuantityChange, onNotesChange, onClose, onSubmit }) => {
+      const StockMovementModal = ({ product, type, quantity, notes, onQuantityChange, onNotesChange, onClose, onSubmit, darkMode }) => {
           // Get pack sizes
           const packSize = product.online_pack_size || product.onlinePackSize || 'N/A';
           const receivedPackSize = product.received_pack_size || product.receivedPackSize || '';
@@ -1583,20 +1594,23 @@
           const quickQuantities = getQuickQuantities();
           const receivedPackNum = parseInt(receivedPackSize);
 
+          const inputClass = `w-full p-2 border rounded ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`;
+          const labelClass = `block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : ''}`;
+
           return (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                  <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-                      <div className="p-6 border-b">
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl max-w-md w-full`}>
+                      <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : ''}`}>
                           <h2 className="text-xl font-bold">
                               Stock {type === 'in' ? 'IN' : 'OUT'}: {product.in_house_name || product.inHouseName}
                           </h2>
-                          <p className="text-sm text-gray-600 mt-1">Code: {product.product_code || product.productCode}</p>
+                          <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Code: {product.product_code || product.productCode}</p>
                           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm">
-                              <span className="text-gray-600">
+                              <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
                                   <span className="font-medium">Pack Size:</span> {packSize}
                               </span>
                               {receivedPackSize && (
-                                  <span className="text-gray-600">
+                                  <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
                                       <span className="font-medium">Received Pack:</span> {receivedPackSize}
                                   </span>
                               )}
@@ -1609,7 +1623,7 @@
                           {/* Quick Select Buttons (OUT only) */}
                           {type === 'out' && quickQuantities.length > 0 && (
                               <div>
-                                  <label className="block text-sm font-medium mb-2">Quick Select</label>
+                                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : ''}`}>Quick Select</label>
                                   <div className="flex flex-wrap gap-2">
                                       {quickQuantities.map(qty => (
                                           <button
@@ -1619,12 +1633,12 @@
                                               className={`px-4 py-2 rounded-lg border-2 transition font-medium ${
                                                   parseInt(quantity) === qty
                                                       ? 'border-red-500 bg-red-50 text-red-700'
-                                                      : 'border-gray-300 hover:border-red-300 hover:bg-red-50'
+                                                      : darkMode ? 'border-gray-600 hover:border-red-400 hover:bg-red-900/30' : 'border-gray-300 hover:border-red-300 hover:bg-red-50'
                                               }`}
                                           >
                                               {qty}
                                               {qty === receivedPackNum && (
-                                                  <span className="text-xs ml-1 text-gray-500">(Pack)</span>
+                                                  <span className={`text-xs ml-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>(Pack)</span>
                                               )}
                                           </button>
                                       ))}
@@ -1633,7 +1647,7 @@
                           )}
 
                           <div>
-                              <label className="block text-sm font-medium mb-1">
+                              <label className={labelClass}>
                                   {type === 'out' && quickQuantities.length > 0 ? 'Or enter quantity *' : 'Quantity *'}
                               </label>
                               <input
@@ -1642,25 +1656,25 @@
                                   min="1"
                                   value={quantity}
                                   onChange={(e) => onQuantityChange(e.target.value)}
-                                  className="w-full p-2 border rounded"
+                                  className={inputClass}
                                   autoFocus={type === 'in' || quickQuantities.length === 0}
                               />
                           </div>
                           <div>
-                              <label className="block text-sm font-medium mb-1">Notes</label>
+                              <label className={labelClass}>Notes</label>
                               <textarea
                                   value={notes}
                                   onChange={(e) => onNotesChange(e.target.value)}
-                                  className="w-full p-2 border rounded"
+                                  className={inputClass}
                                   rows="3"
                                   placeholder="Optional notes..."
                               />
                           </div>
                       </div>
-                      <div className="p-6 border-t flex justify-end gap-2">
+                      <div className={`p-6 border-t flex justify-end gap-2 ${darkMode ? 'border-gray-700' : ''}`}>
                           <button
                               onClick={onClose}
-                              className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition"
+                              className={`px-4 py-2 border rounded-lg transition ${darkMode ? 'border-gray-600 hover:bg-gray-700' : 'hover:bg-gray-50'}`}
                           >
                               Cancel
                           </button>
@@ -1681,7 +1695,7 @@
           );
       };
 
-      const PartialReceiveModal = ({ orderItem, onClose, onSubmit }) => {
+      const PartialReceiveModal = ({ orderItem, onClose, onSubmit, darkMode }) => {
           const { item } = orderItem;
           const receivedQty = item.received_qty || 0;
           const orderedQty = parseInt(item.quantity);
@@ -1696,34 +1710,36 @@
               }
           };
 
+          const inputClass = `w-full p-2 border rounded ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`;
+
           return (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                  <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-                      <div className="p-6 border-b">
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl max-w-md w-full`}>
+                      <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : ''}`}>
                           <h2 className="text-xl font-bold">Receive Items</h2>
-                          <p className="text-sm text-gray-600 mt-2">
+                          <p className={`text-sm mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                               <span className="font-medium">{item.productName}</span>
                           </p>
-                          <p className="text-sm text-gray-600">Code: {item.productCode}</p>
+                          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Code: {item.productCode}</p>
                       </div>
                       <div className="p-6 space-y-4">
-                          <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                          <div className={`p-4 rounded-lg space-y-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                               <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600">Ordered:</span>
+                                  <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Ordered:</span>
                                   <span className="font-medium">{orderedQty}</span>
                               </div>
                               <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600">Already Received:</span>
+                                  <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Already Received:</span>
                                   <span className="font-medium text-green-600">{receivedQty}</span>
                               </div>
-                              <div className="flex justify-between text-sm border-t pt-2">
-                                  <span className="text-gray-600 font-medium">Remaining:</span>
+                              <div className={`flex justify-between text-sm border-t pt-2 ${darkMode ? 'border-gray-600' : ''}`}>
+                                  <span className={`font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Remaining:</span>
                                   <span className="font-bold text-indigo-600">{remaining}</span>
                               </div>
                           </div>
 
                           <form onSubmit={handleSubmit}>
-                              <label className="block text-sm font-medium mb-1">Quantity to Receive *</label>
+                              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : ''}`}>Quantity to Receive *</label>
                               <input
                                   type="number"
                                   required
@@ -1731,10 +1747,10 @@
                                   max={remaining}
                                   value={quantity}
                                   onChange={(e) => setQuantity(e.target.value)}
-                                  className="w-full p-2 border rounded"
+                                  className={inputClass}
                                   autoFocus
                               />
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                   Enter the quantity you are receiving now (max: {remaining})
                               </p>
 
@@ -1742,7 +1758,7 @@
                                   <button
                                       type="button"
                                       onClick={onClose}
-                                      className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition"
+                                      className={`px-4 py-2 border rounded-lg transition ${darkMode ? 'border-gray-600 hover:bg-gray-700' : 'hover:bg-gray-50'}`}
                                   >
                                       Cancel
                                   </button>
@@ -1761,7 +1777,7 @@
           );
       };
 
-      const OrderFormModal = ({ products, onClose, onSubmit }) => {
+      const OrderFormModal = ({ products, onClose, onSubmit, darkMode }) => {
           const [formData, setFormData] = useState({
               supplier: 'MacFarlane',
               expected_date: '',
@@ -1807,54 +1823,57 @@
               });
           };
 
+          const inputClass = `w-full p-2 border rounded ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`;
+          const labelClass = `block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : ''}`;
+
           return (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                  <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-                      <div className="p-6 border-b sticky top-0 bg-white">
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto`}>
+                      <div className={`p-6 border-b sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'}`}>
                           <h2 className="text-xl font-bold">Create New Order</h2>
                       </div>
                       <form onSubmit={handleSubmit} className="p-6 space-y-6">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Supplier *</label>
+                                  <label className={labelClass}>Supplier *</label>
                                   <input
                                       type="text"
                                       required
                                       value={formData.supplier}
                                       onChange={(e) => setFormData({...formData, supplier: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium mb-1">Expected Delivery Date *</label>
+                                  <label className={labelClass}>Expected Delivery Date *</label>
                                   <input
                                       type="date"
                                       required
                                       value={formData.expected_date}
                                       onChange={(e) => setFormData({...formData, expected_date: e.target.value})}
-                                      className="w-full p-2 border rounded"
+                                      className={inputClass}
                                   />
                               </div>
                           </div>
 
                           <div>
-                              <label className="block text-sm font-medium mb-1">Order Notes</label>
+                              <label className={labelClass}>Order Notes</label>
                               <textarea
                                   value={formData.notes}
                                   onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                                  className="w-full p-2 border rounded"
+                                  className={inputClass}
                                   rows="2"
                                   placeholder="Optional notes about this order..."
                               />
                           </div>
 
-                          <div className="border-t pt-4">
+                          <div className={`border-t pt-4 ${darkMode ? 'border-gray-700' : ''}`}>
                               <h3 className="font-semibold mb-3">Add Items to Order</h3>
                               <div className="flex gap-2 mb-4 flex-wrap">
                                   <select
                                       value={selectedProduct}
                                       onChange={(e) => setSelectedProduct(e.target.value)}
-                                      className="flex-1 min-w-[200px] p-2 border rounded"
+                                      className={`flex-1 min-w-[200px] p-2 border rounded ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}
                                   >
                                       <option value="">Select a product...</option>
                                       {products.map(p => (
@@ -1869,7 +1888,7 @@
                                       value={itemQuantity}
                                       onChange={(e) => setItemQuantity(e.target.value)}
                                       placeholder="Qty"
-                                      className="w-24 p-2 border rounded"
+                                      className={`w-24 p-2 border rounded ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}
                                   />
                                   <button
                                       type="button"
@@ -1881,17 +1900,17 @@
                               </div>
 
                               {orderItems.length > 0 && (
-                                  <div className="border rounded-lg overflow-hidden">
+                                  <div className={`border rounded-lg overflow-hidden ${darkMode ? 'border-gray-700' : ''}`}>
                                       <table className="w-full">
-                                          <thead className="bg-gray-50">
+                                          <thead className={darkMode ? 'bg-gray-700' : 'bg-gray-50'}>
                                               <tr>
-                                                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600">Code</th>
-                                                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600">Product</th>
-                                                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600">Quantity</th>
-                                                  <th className="px-4 py-2 text-right text-xs font-semibold text-gray-600">Action</th>
+                                                  <th className={`px-4 py-2 text-left text-xs font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Code</th>
+                                                  <th className={`px-4 py-2 text-left text-xs font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Product</th>
+                                                  <th className={`px-4 py-2 text-left text-xs font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Quantity</th>
+                                                  <th className={`px-4 py-2 text-right text-xs font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Action</th>
                                               </tr>
                                           </thead>
-                                          <tbody className="divide-y">
+                                          <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : ''}`}>
                                               {orderItems.map((item, idx) => (
                                                   <tr key={idx}>
                                                       <td className="px-4 py-2 text-sm">{item.productCode}</td>
@@ -1914,7 +1933,7 @@
                               )}
 
                               {orderItems.length === 0 && (
-                                  <div className="text-center py-8 text-gray-500 border rounded-lg">
+                                  <div className={`text-center py-8 border rounded-lg ${darkMode ? 'text-gray-400 border-gray-700' : 'text-gray-500'}`}>
                                       No items added yet. Select a product and quantity above.
                                   </div>
                               )}
@@ -1924,7 +1943,7 @@
                               <button
                                   type="button"
                                   onClick={onClose}
-                                  className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition"
+                                  className={`px-4 py-2 border rounded-lg transition ${darkMode ? 'border-gray-600 hover:bg-gray-700' : 'hover:bg-gray-50'}`}
                               >
                                   Cancel
                               </button>
