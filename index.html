@@ -424,6 +424,7 @@
                           <StockView
                               products={products}
                               darkMode={darkMode}
+                              isAdmin={currentUser?.role === 'admin'}
                               onAddProduct={() => setShowAddProduct(true)}
                               onEditProduct={(product) => {
                                   setSelectedProduct(product);
@@ -544,7 +545,7 @@
           );
       };
 
-      const StockView = ({ products, darkMode, onAddProduct, onEditProduct, onDeleteProduct, onStockIn, onStockOut }) => {
+      const StockView = ({ products, darkMode, isAdmin, onAddProduct, onEditProduct, onDeleteProduct, onStockIn, onStockOut }) => {
           const [searchTerm, setSearchTerm] = useState('');
           const [filterLowStock, setFilterLowStock] = useState(false);
 
@@ -636,14 +637,18 @@
                                       </td>
                                       <td className="px-4 py-3 text-right">
                                           <div className="flex justify-end items-center gap-2">
-                                              <button
-                                                  onClick={() => onEditProduct(product)}
-                                                  className={`px-3 py-1 rounded transition text-sm ${darkMode ? 'bg-gray-600 text-gray-200 hover:bg-gray-500' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                                                  title="Edit product"
-                                              >
-                                                  Edit
-                                              </button>
-                                              <span className={`border-l h-6 mx-1 ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}></span>
+                                              {isAdmin && (
+                                                  <>
+                                                      <button
+                                                          onClick={() => onEditProduct(product)}
+                                                          className={`px-3 py-1 rounded transition text-sm ${darkMode ? 'bg-gray-600 text-gray-200 hover:bg-gray-500' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                                          title="Edit product"
+                                                      >
+                                                          Edit
+                                                      </button>
+                                                      <span className={`border-l h-6 mx-1 ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}></span>
+                                                  </>
+                                              )}
                                               <button
                                                   onClick={() => onStockIn(product)}
                                                   className={`px-3 py-1 rounded transition text-sm ${darkMode ? 'bg-green-600 text-white hover:bg-green-500' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}
