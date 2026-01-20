@@ -402,7 +402,7 @@
                   <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-b'}`}>
                       <div className="container mx-auto px-4">
                           <div className="flex gap-1">
-                              {['stock', 'prices', 'orders', 'movements', 'usage'].map(tab => (
+                              {['stock', 'orders', 'movements', 'prices', 'usage'].map(tab => (
                                   <button
                                       key={tab}
                                       onClick={() => setActiveTab(tab)}
@@ -710,6 +710,7 @@
                           <thead className={`${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50'} border-b`}>
                               <tr>
                                   <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>In House Name</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Size</th>
                                   <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Product Name</th>
                                   <th className={`px-4 py-3 text-right text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Pack Size</th>
                                   <th className={`px-4 py-3 text-right text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Unit Cost</th>
@@ -718,16 +719,19 @@
                           </thead>
                           <tbody className={`divide-y ${darkMode ? 'divide-gray-700 bg-gray-800' : 'bg-white'}`}>
                               {filteredProducts.map(product => {
-                                  const packSize = parseFloat(product.online_pack_size || product.onlinePackSize || 0);
+                                  const packSizeRaw = product.online_pack_size || product.onlinePackSize;
+                                  const packSize = parseFloat(packSizeRaw);
                                   const unitCost = parseFloat(product.unit_cost || 0);
-                                  const packCost = packSize * unitCost;
+                                  const isNumericPack = !isNaN(packSize) && packSize > 1;
+                                  const packCost = isNumericPack ? (packSize * unitCost) : unitCost;
                                   return (
                                       <tr key={product.id} className={`${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
                                           <td className="px-4 py-3 text-sm font-medium">{product.in_house_name || product.inHouseName}</td>
+                                          <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{product.size || '-'}</td>
                                           <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{product.product_name || product.productName || '-'}</td>
-                                          <td className="px-4 py-3 text-sm text-right">{packSize || '-'}</td>
+                                          <td className="px-4 py-3 text-sm text-right">{isNumericPack ? packSize : 'Each'}</td>
                                           <td className="px-4 py-3 text-sm text-right">{unitCost ? `£${unitCost.toFixed(4)}` : '-'}</td>
-                                          <td className="px-4 py-3 text-sm text-right font-semibold">{packCost ? `£${packCost.toFixed(2)}` : '-'}</td>
+                                          <td className="px-4 py-3 text-sm text-right font-semibold">{packCost && !isNaN(packCost) ? `£${packCost.toFixed(2)}` : '-'}</td>
                                       </tr>
                                   );
                               })}
