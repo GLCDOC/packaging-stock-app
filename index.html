@@ -402,7 +402,7 @@
                   <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-b'}`}>
                       <div className="container mx-auto px-4">
                           <div className="flex gap-1">
-                              {['stock', 'orders', 'movements', 'usage'].map(tab => (
+                              {['stock', 'prices', 'orders', 'movements', 'usage'].map(tab => (
                                   <button
                                       key={tab}
                                       onClick={() => setActiveTab(tab)}
@@ -440,6 +440,13 @@
                                   setMovementType('out');
                                   setShowStockMovement(true);
                               }}
+                          />
+                      )}
+
+                      {activeTab === 'prices' && (
+                          <PricesView
+                              products={products}
+                              darkMode={darkMode}
                           />
                       )}
 
@@ -652,6 +659,76 @@
                                           </div>
                                       </td>
                                   </tr>
+                                  );
+                              })}
+                          </tbody>
+                      </table>
+                      {filteredProducts.length === 0 && (
+                          <div className="text-center py-12 text-gray-500">
+                              No products found
+                          </div>
+                      )}
+                  </div>
+              </div>
+          );
+      };
+
+      const PricesView = ({ products, darkMode }) => {
+          const [searchTerm, setSearchTerm] = useState('');
+
+          const filteredProducts = products.filter(p => {
+              const inHouseName = p.in_house_name || p.inHouseName || '';
+              const productName = p.product_name || p.productName || '';
+              return inHouseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                     productName.toLowerCase().includes(searchTerm.toLowerCase());
+          });
+
+          // Calculate totals
+          const totalPackCost = filteredProducts.reduce((sum, p) => {
+              const packSize = parseFloat(p.online_pack_size || p.onlinePackSize || 0);
+              const unitCost = parseFloat(p.unit_cost || 0);
+              return sum + (packSize * unitCost);
+          }, 0);
+
+          return (
+              <div>
+                  <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+                      <input
+                          type="text"
+                          placeholder="Search products..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className={`px-4 py-2 border rounded-lg w-64 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : ''}`}
+                      />
+                      <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {filteredProducts.length} products
+                      </div>
+                  </div>
+
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow overflow-x-auto`}>
+                      <table className="w-full">
+                          <thead className={`${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50'} border-b`}>
+                              <tr>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>In House Name</th>
+                                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Product Name</th>
+                                  <th className={`px-4 py-3 text-right text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Pack Size</th>
+                                  <th className={`px-4 py-3 text-right text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Unit Cost</th>
+                                  <th className={`px-4 py-3 text-right text-xs font-semibold uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Pack Cost</th>
+                              </tr>
+                          </thead>
+                          <tbody className={`divide-y ${darkMode ? 'divide-gray-700 bg-gray-800' : 'bg-white'}`}>
+                              {filteredProducts.map(product => {
+                                  const packSize = parseFloat(product.online_pack_size || product.onlinePackSize || 0);
+                                  const unitCost = parseFloat(product.unit_cost || 0);
+                                  const packCost = packSize * unitCost;
+                                  return (
+                                      <tr key={product.id} className={`${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
+                                          <td className="px-4 py-3 text-sm font-medium">{product.in_house_name || product.inHouseName}</td>
+                                          <td className={`px-4 py-3 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{product.product_name || product.productName || '-'}</td>
+                                          <td className="px-4 py-3 text-sm text-right">{packSize || '-'}</td>
+                                          <td className="px-4 py-3 text-sm text-right">{unitCost ? `£${unitCost.toFixed(4)}` : '-'}</td>
+                                          <td className="px-4 py-3 text-sm text-right font-semibold">{packCost ? `£${packCost.toFixed(2)}` : '-'}</td>
+                                      </tr>
                                   );
                               })}
                           </tbody>
