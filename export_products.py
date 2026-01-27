@@ -27,7 +27,7 @@ def format_for_email(products):
 
     lines.append("PACKAGING PRODUCTS LIST")
     lines.append("")
-    lines.append("Product Code | In-House Name | Product Name")
+    lines.append("Product Code | Product Name | In-House Name")
     lines.append("")
 
     for product in products:
@@ -35,7 +35,7 @@ def format_for_email(products):
         name = product.get('product_name') or '-'
         in_house = product.get('in_house_name') or '-'
 
-        lines.append(f"{code} | {in_house} | {name}")
+        lines.append(f"{code} | {name} | {in_house}")
 
     lines.append("")
     lines.append(f"Total: {len(products)} products")

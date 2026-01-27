@@ -1,32 +1,32 @@
 PACKAGING PRODUCTS LIST
 
-Product Code | In-House Name | Product Name
+Product Code | Product Name | In-House Name
 
-219940 | A4 Paper | Copier Paper | A4 | White
-001294 | Blue Roll | BLUE PAPER TOWEL - CENTRE FEED
-296586 | Console Box | CSW 0427 528X350X121 PRINTED X
-344979 | Double Wall Medium | DW CARTON 12 X 9 X 9
-345027 | Double Wall PS5 | DW CARTON 24 X 18 X 9
-345000 | Double Wall Small | B2B Boxes | Small | L229/ W152/ H152mm | Grade/ flute (900pp)
-004854 | Ebay Envelopes | NEW MAIL LITE WHITE MLWD/1
-256377 | Ebay Postal Wrap | 256377 POSTAL WRAP
-271158 | Ecom Box | ECOM BOX 5
-288732 | Filapak | Greenline Fillpak Paper - 48 per pallet
-000370 | Heavy Duty Poly Bag | POLYTHENE BAG 18 X 24 HEAVY
-001347 | Large Bubble Bag | SMALL BUBBLE BAG 230 X 285 MM
-269664 | PS4 Original Airsac | PS4 AIRSAC 570X487MM RPE
-326696 | PS4 Slim Airsac | RECYLED 15" NOTEBOOK
-311269 | PS5 Airsac | PS5 AIRSAC 540X630MM
-TAGP-BR-GI-70-100-REINFORCED | Reinforced Tape | USE PRODUCT REF 002125
-345038 | Single Wall Small | CSW 0201 215x180x105mm | Macfarlane SKU: CSW-0201-215-180-105-FSC
-345041 | Single Wall Square | SW CARTON 9.1 X 9.1 X 5.1
-4002969 | Small Airsac | AIRSAC CLEAR 300X240X30MM 7 CE
-001346 | Small Bubble Bag | ***USE LAMINATED***
-4003990 | Small Folded Box | PRTD SW 0215 140X100X240MM LAR
-345014 | Temp Console | CDW 0201 457x305x254mm
-000719 | Vinyl Tape | 0719 VINYL TAPE CL 75MMX66M-SK
-290978 | Xbox One Airsac | AIRSC XBOX 560X480MM 13+1 40MM
-4005606 | Xbox Series X Airsac | 5 LITRE PAINT AIRSAC
-345059 | Xbox Series X Box | SW CARTON 16 X 16 X 16 M.DEPTH
+219940 | Copier Paper | A4 | White | A4 Paper
+001294 | BLUE PAPER TOWEL - CENTRE FEED | Blue Roll
+296586 | CSW 0427 528X350X121 PRINTED X | Console Box
+344979 | DW CARTON 12 X 9 X 9 | Double Wall Medium
+345027 | DW CARTON 24 X 18 X 9 | Double Wall PS5
+345000 | B2B Boxes | Small | L229/ W152/ H152mm | Grade/ flute (900pp) | Double Wall Small
+004854 | NEW MAIL LITE WHITE MLWD/1 | Ebay Envelopes
+256377 | 256377 POSTAL WRAP | Ebay Postal Wrap
+271158 | ECOM BOX 5 | Ecom Box
+288732 | Greenline Fillpak Paper - 48 per pallet | Filapak
+000370 | POLYTHENE BAG 18 X 24 HEAVY | Heavy Duty Poly Bag
+001347 | SMALL BUBBLE BAG 230 X 285 MM | Large Bubble Bag
+269664 | PS4 AIRSAC 570X487MM RPE | PS4 Original Airsac
+326696 | RECYLED 15" NOTEBOOK | PS4 Slim Airsac
+311269 | PS5 AIRSAC 540X630MM | PS5 Airsac
+TAGP-BR-GI-70-100-REINFORCED | USE PRODUCT REF 002125 | Reinforced Tape
+345038 | CSW 0201 215x180x105mm | Macfarlane SKU: CSW-0201-215-180-105-FSC | Single Wall Small
+345041 | SW CARTON 9.1 X 9.1 X 5.1 | Single Wall Square
+4002969 | AIRSAC CLEAR 300X240X30MM 7 CE | Small Airsac
+001346 | ***USE LAMINATED*** | Small Bubble Bag
+4003990 | PRTD SW 0215 140X100X240MM LAR | Small Folded Box
+345014 | CDW 0201 457x305x254mm | Temp Console
+000719 | 0719 VINYL TAPE CL 75MMX66M-SK | Vinyl Tape
+290978 | AIRSC XBOX 560X480MM 13+1 40MM | Xbox One Airsac
+4005606 | 5 LITRE PAINT AIRSAC | Xbox Series X Airsac
+345059 | SW CARTON 16 X 16 X 16 M.DEPTH | Xbox Series X Box
 
 Total: 26 products
